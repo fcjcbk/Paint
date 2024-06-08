@@ -9,6 +9,7 @@ import java.util.Stack;
 
 public class DrawPanelListener extends JPanel implements MouseListener, MouseMotionListener {
 
+    public static boolean isInCanvas = false;
     private int x1, y1, x2, y2;
     private boolean dragged = false;
     private Color currentColor;
@@ -16,24 +17,17 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     private boolean transparent;
     private int grouped;
     private BasicStroke stroke = new BasicStroke((float) 2);
-
     private Stack<Shape> shapes;
     private Stack<Shape> removed;
-    private Stack<Shape> preview;
-
+    private Shape lastState;
     private BufferedImage canvas;
     private Graphics2D graphics2D;
     private ETools activeTool;
     private TextDialog textDialog;
-
-    private ArcStatus drawStatus = ArcStatus.NOT_DRAWING;
-    private ArcStatus direction = ArcStatus.NO_DIRECTION;
     private Dimension center, startPoint;
     private int radius;
     private Vector3 benchmark;
     private Rectangle rectangle;
-
-    public static boolean isInCanvas = false;
 
     public DrawPanelListener(int x, int y) {
         setSize(x, y);
@@ -54,7 +48,6 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         this.shapes = new Stack<Shape>();
         this.removed = new Stack<Shape>();
         this.grouped = 1;
-        this.preview = new Stack<Shape>();
         this.transparent = true;
     }
 
@@ -78,14 +71,13 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         this.shapes = new Stack<Shape>();
         this.removed = new Stack<Shape>();
         this.grouped = 1;
-        this.preview = new Stack<Shape>();
         this.transparent = true;
     }
 
     public void changeDrawPanelSize(int width, int height) {
         shapes.clear();
         removed.clear();
-        preview.clear();
+        lastState = null;
 
         Dimension temp = new Dimension(width, height);
         setSize(temp);
@@ -158,8 +150,8 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 g2.drawString(s.getMessage(), s.getX1(), s.getY1());
             }
         }
-        if (preview.size() > 0) {
-            Shape s = preview.peek();
+        if (lastState != null) {
+            Shape s = lastState;
             g2.setColor(s.getColor());
             g2.setStroke(s.getStroke());
             if (s.getShape() == ETools.LINE) {
@@ -206,7 +198,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
 
     }
 
-public void setTool(ETools tool) {
+    public void setTool(ETools tool) {
         this.activeTool = tool;
         //System.out.println(this.toString());
         //System.out.println(activeTool.toString() + "st");
@@ -323,32 +315,7 @@ public void setTool(ETools tool) {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (activeTool == ETools.ARC) {
-            System.out.println(drawStatus);
-            // NOT_DRAWING 状态
-            if (drawStatus == ArcStatus.NOT_DRAWING) {
-                center = new Dimension(e.getX(), e.getY());
-                drawStatus = ArcStatus.DEFINED_CENTER;
-                // 此时已经确定了圆心，变为DEFINED_CENTER（确定_圆心）状态
-            } else if (drawStatus == ArcStatus.DEFINED_CENTER) {
-                startPoint = new Dimension(e.getX(), e.getY());
-                radius = calcDistance(startPoint, center);
-                benchmark = new Vector3(startPoint.width - center.width,
-                        -startPoint.height + center.height, 0);
-                drawStatus = ArcStatus.DEFINED_R;
-                rectangle = new Rectangle(center.width - radius, center.height - radius,
-                        2 * radius, 2 * radius);
-                // 此时已经确定了半径，变为DEFINED_R（确定_半径）状态
-            } else if (drawStatus == ArcStatus.DEFINED_R) {
-                if (preview.size() != 0) {
-                    shapes.push(preview.pop());
-                    preview.clear();
-                }
-                drawStatus = ArcStatus.NOT_DRAWING;
-                direction = ArcStatus.NO_DIRECTION;
-                // 此时完成了绘图，返回NOT_DRAWING状态
-            }
-        } else if (activeTool == ETools.STRAW) {
+        if (activeTool == ETools.STRAW) {
             try {
                 int x = e.getX(), y = e.getY();
                 x += StartUp.mainWindow.getLocation().x;
@@ -384,9 +351,9 @@ public void setTool(ETools tool) {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (preview.size() != 0 && activeTool != ETools.ARC) {
-            shapes.push(preview.pop());
-            preview.clear();
+        if (lastState != null && activeTool != ETools.ARC) {
+            shapes.push(lastState);
+            lastState = null;
         } else if (activeTool == ETools.TEXT) {
             int result = textDialog.showCustomDialog(StartUp.mainWindow);
             if (result == TextDialog.APPLY_OPTION) {
@@ -443,61 +410,61 @@ public void setTool(ETools tool) {
             x1 = x2;
             y1 = y2;
         } else if (activeTool == ETools.LINE) {
-            preview.push(new Shape(x1, y1, x2, y2, primary, stroke, ETools.LINE, secondary, transparent));
+            lastState = new Shape(x1, y1, x2, y2, primary, stroke, ETools.LINE, secondary, transparent);
             StartUp.mainWindow.getDrawPanel().repaint();
         } else if (activeTool == ETools.RECTANGLE) {
             if (x1 < x2 && y1 < y2) {
-                preview.push(new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.RECTANGLE, secondary, transparent));
+                lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.RECTANGLE, secondary, transparent);
             } else if (x2 < x1 && y1 < y2) {
-                preview.push(new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.RECTANGLE, secondary, transparent));
+                lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.RECTANGLE, secondary, transparent);
             } else if (x1 < x2 && y2 < y1) {
-                preview.push(new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.RECTANGLE, secondary, transparent));
+                lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.RECTANGLE, secondary, transparent);
             } else if (x2 < x1 && y2 < y1) {
-                preview.push(new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.RECTANGLE, secondary, transparent));
+                lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.RECTANGLE, secondary, transparent);
             }
             StartUp.mainWindow.getDrawPanel().repaint();
         } else if (activeTool == ETools.ELLIPTICAL) {
             if (x1 < x2 && y1 < y2) {
-                preview.push(new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.ELLIPTICAL, secondary, transparent));
+                lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.ELLIPTICAL, secondary, transparent);
             } else if (x2 < x1 && y1 < y2) {
-                preview.push(new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.ELLIPTICAL, secondary, transparent));
+                lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.ELLIPTICAL, secondary, transparent);
             } else if (x1 < x2 && y2 < y1) {
-                preview.push(new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.ELLIPTICAL, secondary, transparent));
+                lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.ELLIPTICAL, secondary, transparent);
             } else if (x2 < x1 && y2 < y1) {
-                preview.push(new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.ELLIPTICAL, secondary, transparent));
+                lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.ELLIPTICAL, secondary, transparent);
             }
             StartUp.mainWindow.getDrawPanel().repaint();
         } else if (activeTool == ETools.PENTAGON) {
             if (x1 < x2 && y1 < y2) {
-                preview.push(new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.PENTAGON, secondary, transparent));
+                lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.PENTAGON, secondary, transparent);
             } else if (x2 < x1 && y1 < y2) {
-                preview.push(new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.PENTAGON, secondary, transparent));
+                lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.PENTAGON, secondary, transparent);
             } else if (x1 < x2 && y2 < y1) {
-                preview.push(new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.PENTAGON, secondary, transparent));
+                lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.PENTAGON, secondary, transparent);
             } else if (x2 < x1 && y2 < y1) {
-                preview.push(new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.PENTAGON, secondary, transparent));
+                lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.PENTAGON, secondary, transparent);
             }
             StartUp.mainWindow.getDrawPanel().repaint();
         } else if (activeTool == ETools.HEXAGON) {
             if (x1 < x2 && y1 < y2) {
-                preview.push(new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.HEXAGON, secondary, transparent));
+                lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.HEXAGON, secondary, transparent);
             } else if (x2 < x1 && y1 < y2) {
-                preview.push(new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.HEXAGON, secondary, transparent));
+                lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.HEXAGON, secondary, transparent);
             } else if (x1 < x2 && y2 < y1) {
-                preview.push(new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.HEXAGON, secondary, transparent));
+                lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.HEXAGON, secondary, transparent);
             } else if (x2 < x1 && y2 < y1) {
-                preview.push(new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.HEXAGON, secondary, transparent));
+                lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.HEXAGON, secondary, transparent);
             }
             StartUp.mainWindow.getDrawPanel().repaint();
         } else if (activeTool == ETools.TRIANGLE) {
             if (x1 < x2 && y1 < y2) {
-                preview.push(new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.TRIANGLE, secondary, transparent));
+                lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.TRIANGLE, secondary, transparent);
             } else if (x2 < x1 && y1 < y2) {
-                preview.push(new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.TRIANGLE, secondary, transparent));
+                lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.TRIANGLE, secondary, transparent);
             } else if (x1 < x2 && y2 < y1) {
-                preview.push(new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.TRIANGLE, secondary, transparent));
+                lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.TRIANGLE, secondary, transparent);
             } else if (x2 < x1 && y2 < y1) {
-                preview.push(new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.TRIANGLE, secondary, transparent));
+                lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.TRIANGLE, secondary, transparent);
             }
             StartUp.mainWindow.getDrawPanel().repaint();
         }
@@ -506,38 +473,5 @@ public void setTool(ETools tool) {
     @Override
     public void mouseMoved(MouseEvent e) {
         StartUp.mainWindow.setMousePosLabel(e.getX(), e.getY());
-
-        if (activeTool == ETools.ARC) {
-            Color primary = currentColor;
-            Color secondary = lastColor;
-            x2 = e.getX();
-            y2 = e.getY();
-            if (drawStatus == ArcStatus.NOT_DRAWING) {
-                return;
-            } else if (drawStatus == ArcStatus.DEFINED_CENTER) {
-                preview.push(new Shape(x1, y1, x2, y2, primary, stroke, ETools.LINE, secondary, transparent));
-                StartUp.mainWindow.getDrawPanel().repaint();
-            } else if (drawStatus == ArcStatus.DEFINED_R) {
-                //System.out.println(direction);
-                if (direction == ArcStatus.NO_DIRECTION) {
-                    Vector3 temp = new Vector3(x2 - center.width, -y2 + center.height, 0);
-                    direction = benchmark.calcDirection(temp);
-                } else if (direction == ArcStatus.LEFT) {
-                    //System.out.println(benchmark.print());
-                    int startAngle = benchmark.normalization().calcAngle(new Vector3(1, 0, 0));
-                    Vector3 temp = new Vector3(x2 - center.width, -y2 + center.height, 0);
-                    int drawAngle = temp.normalization().calcAngle(benchmark.normalization());
-                    //System.out.println(startAngle + " " + drawAngle);
-                    //System.out.println(temp.calcDirection(benchmark));
-                    preview.push(new Shape(rectangle, primary, stroke, ETools.ARC, secondary, transparent, startAngle, drawAngle));
-                } else if (direction == ArcStatus.RIGHT) {
-                    int startAngle = benchmark.normalization().calcAngle(new Vector3(1, 0, 0));
-                    Vector3 temp = new Vector3(x2 - center.width, -y2 + center.height, 0);
-                    int drawAngle = -(360 - temp.normalization().calcAngle(benchmark.normalization()));
-                    preview.push(new Shape(rectangle, primary, stroke, ETools.ARC, secondary, transparent, startAngle, drawAngle));
-                }
-            }
-            StartUp.mainWindow.getDrawPanel().repaint();
-        }
     }
 }

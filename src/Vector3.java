@@ -21,25 +21,11 @@ public class Vector3 {
         return modulus;
     }
 
-    public ArcStatus calcDirection(Vector3 vector3) {
-        double val = x * vector3.y - y * vector3.x;
-        if (val < 0) {
-            return ArcStatus.RIGHT;
-        } else if (val > 0) {
-            return ArcStatus.LEFT;
-        } else {
-            return ArcStatus.NO_DIRECTION;
-        }
-    }
 
     public int calcAngle(Vector3 vector3) {
         System.out.println(Math.acos((x * vector3.x + y * vector3.y) / (modulus * vector3.getModulus())));
         int angle = (int) ((180 / PI) * Math.acos((x * vector3.x + y * vector3.y) / (modulus * vector3.getModulus())));
 
-        if (calcDirection(vector3) == ArcStatus.LEFT) {
-            System.out.println(angle + " sd");
-            angle = 360 - angle;
-        }
         return angle;
     }
 
