@@ -96,6 +96,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         StartUp.mainWindow.setCanvasSizeLabel(width, height);
     }
 
+    @Override
     public void paintComponent(Graphics g) {
         //System.out.println(activeTool.toString() + "pc");
         Dimension dimension = StartUp.mainWindow.getDrawPanel().getSize();
@@ -205,7 +206,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
 
     }
 
-    public void setTool(ETools tool) {
+public void setTool(ETools tool) {
         this.activeTool = tool;
         //System.out.println(this.toString());
         //System.out.println(activeTool.toString() + "st");
@@ -281,7 +282,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
             return;
         }
 
-        Shape lastRemoved = shapes.Pop();
+        Shape lastRemoved = shapes.pop();
         removed.push(lastRemoved);
 
         if (lastRemoved.group == 0) {
