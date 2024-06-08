@@ -266,21 +266,21 @@ public class PaintMainWindow extends JFrame implements ActionListener {
         okay.setSize(75, 25);
         okay.setLocation(250, 25);
         okay.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                   try {
-                       int newDrawPanelWidth = Integer.parseInt(width.getText());
-                       int newDrawPanelHeight = Integer.parseInt(height.getText());
-                       newFileFrame.dispose();
+                                   public void actionPerformed(ActionEvent e) {
+                                       try {
+                                           int newDrawPanelWidth = Integer.parseInt(width.getText());
+                                           int newDrawPanelHeight = Integer.parseInt(height.getText());
+                                           newFileFrame.dispose();
 
-                       ((DrawPanelListener) drawPanel).changeDrawPanelSize(newDrawPanelWidth, newDrawPanelHeight);
-                   } catch (NumberFormatException nfe) {
-                       JOptionPane.showMessageDialog(null,
-                               "输入错误，请输入整数",
-                               "ERROR",
-                               JOptionPane.ERROR_MESSAGE);
-                   }
-               }
-            }
+                                           ((DrawPanelListener) drawPanel).changeDrawPanelSize(newDrawPanelWidth, newDrawPanelHeight);
+                                       } catch (NumberFormatException nfe) {
+                                           JOptionPane.showMessageDialog(null,
+                                                   "输入错误，请输入整数",
+                                                   "ERROR",
+                                                   JOptionPane.ERROR_MESSAGE);
+                                       }
+                                   }
+                               }
         );
 
         JButton cancel = new JButton("取消");

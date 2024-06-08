@@ -109,6 +109,22 @@ public class Shape {
         return this.y2;
     }
 
+    public void setX1(int x) {
+        this.x1 = x;
+    }
+
+    public void setX2(int x) {
+        this.x2 = x;
+    }
+
+    public void setY1(int y) {
+        this.y1 = y;
+    }
+
+    public void setY2(int y) {
+        this.y2 = y;
+    }
+
     public Color getColor() {
         return this.color;
     }
