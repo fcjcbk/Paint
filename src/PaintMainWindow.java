@@ -338,7 +338,7 @@ public class PaintMainWindow extends JFrame implements ActionListener {
         } else if (e.getSource() == lineBtn) {
             ((DrawPanelListener) drawPanel).setTool(ETools.LINE);
         } else if (e.getSource() == arcBtn) {
-            ((DrawPanelListener) drawPanel).setTool(ETools.ARC);
+            ((DrawPanelListener) drawPanel).setTool(ETools.POLYGON);
         } else if (e.getSource() == ellipticalBtn) {
             ((DrawPanelListener) drawPanel).setTool(ETools.ELLIPTICAL);
         } else if (e.getSource() == hexagonBtn) {

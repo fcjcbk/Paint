@@ -1,6 +1,5 @@
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Stack;
 
 
 interface Drawable {
@@ -145,7 +144,7 @@ class RectangleShape extends Shape {
     }
 }
 
-class ELLIPTICALShape extends Shape {
+class EllipticalShape extends Shape {
     private int width, height;
 
     public int getWidth() {
@@ -164,14 +163,14 @@ class ELLIPTICALShape extends Shape {
         this.height = height;
     }
 
-    public ELLIPTICALShape(int x, int y, int width, int height, Color color, BasicStroke stroke) {
+    public EllipticalShape(int x, int y, int width, int height, Color color, BasicStroke stroke) {
         super(x, y, color, stroke, ETools.RECTANGLE);
         this.width = width;
         this.height = height;
     }
 
 
-    public ELLIPTICALShape(int x, int y, int width, int height, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
+    public EllipticalShape(int x, int y, int width, int height, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
         super(x, y, color, stroke, ETools.RECTANGLE, fillColor, transparent);
         this.width = width;
         this.height = height;
@@ -376,4 +375,73 @@ class Pencil implements Drawable {
     public int getLines() {
         return lines.size();
     }
+}
+
+class Polygon implements Drawable {
+    private ArrayList<Integer> pointsX;
+    private ArrayList<Integer> pointsY;
+    private boolean isFinish = false;
+    private Color color;
+    private BasicStroke stroke;
+
+    private int previewPointX = 0;
+    private int previewPointY = 0;
+
+    public Polygon(Color color, BasicStroke stroke) {
+        pointsX = new ArrayList<>();
+        pointsY = new ArrayList<>();
+
+        this.color = color;
+        this.stroke = stroke;
+    }
+
+    @Override
+    public void Draw(Graphics2D g2) {
+        g2.setColor(color);
+        g2.setStroke(stroke);
+        if (isFinish) {
+            int []px = pointsX.stream().mapToInt(i -> i).toArray();
+            int []py = pointsY.stream().mapToInt(i -> i).toArray();
+            g2.drawPolygon(px, py, pointsX.size());
+            return;
+        }
+
+        for (int i = 1; i < pointsX.size(); i++) {
+            g2.drawLine(pointsX.get(i - 1), pointsY.get(i - 1), pointsX.get(i), pointsY.get(i));
+        }
+        g2.drawLine(pointsX.get(size() - 1), pointsY.get(size() - 1), previewPointX, previewPointY);
+    }
+
+    public void setFinish(boolean finish) {
+        isFinish = finish;
+    }
+
+    public boolean isFinish() {
+        return isFinish;
+    }
+
+    public void addPoint(int x, int y) {
+        pointsX.add(x);
+        pointsY.add(y);
+        if (size() == 1) {
+            previewPointX = pointsX.get(pointsX.size() - 1);
+            previewPointY = pointsY.get(pointsY.size() - 1);
+        }
+    }
+
+    public void popPoint() {
+        pointsX.remove(pointsX.size() - 1);
+        pointsY.remove(pointsY.size() - 1);
+    }
+
+    public int size() {
+        return pointsX.size();
+    }
+
+    public void setPreviewPoint(int x, int y) {
+        previewPointX = x;
+        previewPointY = y;
+    }
+
+
 }

@@ -232,6 +232,25 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
             } catch (AWTException ex) {
                 ex.printStackTrace();
             }
+        } else if (activeTool == ETools.POLYGON) {
+            if (lastState == null) {
+                Polygon p = new Polygon(currentColor, stroke);
+                p.addPoint(x1, y1);
+                lastState = p;
+                repaint();
+                return;
+            }
+
+            Polygon p = (Polygon) lastState;
+            p.addPoint(x1, y1);
+            p.setPreviewPoint(x1, y1);
+
+            if (e.getClickCount() == 2 && p.size() > 2) {
+                p.setFinish(true);
+                graphics.push(p);
+                lastState = null;
+            }
+            repaint();
 
         }
     }
@@ -240,14 +259,16 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     public void mousePressed(MouseEvent e) {
         x1 = e.getX();
         y1 = e.getY();
-        if (activeTool == ETools.PENCIL) {
-            lastState = new Pencil();
+        switch (activeTool) {
+            case PENCIL:
+                lastState = new Pencil();
+                break;
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (lastState != null && activeTool != ETools.ARC) {
+        if (lastState != null && activeTool != ETools.POLYGON) {
             graphics.push(lastState);
             lastState = null;
         } else if (activeTool == ETools.TEXT) {
@@ -320,29 +341,29 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 if (x1 < x2 && y1 < y2) {
                     rectangleShape = new RectangleShape(x1, y1, x2 - x1, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y1 < y2) {
-                    rectangleShape = new RectangleShape(x2, y1, x1- x2, y2 - y1, primary, stroke, secondary, transparent);
+                    rectangleShape = new RectangleShape(x2, y1, x1 - x2, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x1 < x2 && y2 < y1) {
                     rectangleShape = new RectangleShape(x1, y2, x2 - x1, y1 - y2, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y2 < y1) {
-                    rectangleShape = new RectangleShape(x2, y2, x1 - x2, y1 - y2, primary, stroke,  secondary, transparent);
+                    rectangleShape = new RectangleShape(x2, y2, x1 - x2, y1 - y2, primary, stroke, secondary, transparent);
                 }
 
-                if (rectangleShape !=  null && e.isShiftDown()) {
+                if (rectangleShape != null && e.isShiftDown()) {
                     rectangleShape.setHeight(rectangleShape.getWidth());
                 }
                 lastState = rectangleShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case ELLIPTICAL:
-                ELLIPTICALShape ellipticalShape = null;
+                EllipticalShape ellipticalShape = null;
                 if (x1 < x2 && y1 < y2) {
-                    ellipticalShape = new ELLIPTICALShape(x1, y1, x2 - x1, y2 - y1, primary, stroke,  secondary, transparent);
+                    ellipticalShape = new EllipticalShape(x1, y1, x2 - x1, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y1 < y2) {
-                    ellipticalShape = new ELLIPTICALShape(x2, y1, x1 - x2, y2 - y1, primary, stroke, secondary, transparent);
+                    ellipticalShape = new EllipticalShape(x2, y1, x1 - x2, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x1 < x2 && y2 < y1) {
-                    ellipticalShape = new ELLIPTICALShape(x1, y2, x2 - x1, y1 - y2, primary, stroke,  secondary, transparent);
+                    ellipticalShape = new EllipticalShape(x1, y2, x2 - x1, y1 - y2, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y2 < y1) {
-                    ellipticalShape = new ELLIPTICALShape(x2, y2, x1 - x2, y1 - y2, primary, stroke,  secondary, transparent);
+                    ellipticalShape = new EllipticalShape(x2, y2, x1 - x2, y1 - y2, primary, stroke, secondary, transparent);
                 }
                 if (ellipticalShape != null && e.isShiftDown()) {
                     ellipticalShape.setHeight(ellipticalShape.getWidth());
@@ -353,7 +374,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 break;
             case PENTAGON:
                 PentagonShape pentagonShape = null;
-        
+
                 if (x1 < x2 && y1 < y2) {
                     pentagonShape = new PentagonShape(x1, y1, x2 - x1, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y1 < y2) {
@@ -402,5 +423,11 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     @Override
     public void mouseMoved(MouseEvent e) {
         StartUp.mainWindow.setMousePosLabel(e.getX(), e.getY());
+        if (activeTool == ETools.POLYGON && lastState != null) {
+            Polygon p = (Polygon) lastState;
+            p.setPreviewPoint(e.getX(), e.getY());
+            repaint();
+        }
+
     }
 }

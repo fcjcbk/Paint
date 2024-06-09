@@ -12,5 +12,6 @@ public enum ETools {
     PENTAGON,
     HEXAGON,
     RECTANGLE,
-    ARC
+    ARC,
+    POLYGON
 }
