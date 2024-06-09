@@ -152,11 +152,23 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         lastColor = currentColor;
         currentColor = c;
         graphics2D.setColor(c);
+
+        if (currentState != null && currentState.getShape() == ETools.SELECT) {
+            Selected s = (Selected) currentState;
+            s.setColor(c);
+            repaint();
+        }
     }
 
     public void setThickness(float f) {
         stroke = new BasicStroke(f);
         graphics2D.setStroke(stroke);
+
+        if (currentState != null && currentState.getShape() == ETools.SELECT) {
+            Selected s = (Selected) currentState;
+            s.setStroke(stroke);
+            repaint();
+        }
     }
 
     public void setTransparency(Boolean b) {

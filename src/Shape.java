@@ -9,6 +9,9 @@ interface Drawable {
     Rectangle getBounds();
     ETools getShape();
     void move(int dx, int dy);
+    void scale(double factor);
+    void setStroke(BasicStroke stroke);
+    void setColor(Color color);
 }
 
 public abstract class Shape implements Drawable {
@@ -77,6 +80,16 @@ public abstract class Shape implements Drawable {
         return this.stroke;
     }
 
+    @Override
+    public void setStroke(BasicStroke stroke) {
+        this.stroke = stroke;
+    }
+
+    @Override
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
     public boolean getTransparency() {
         return this.transparent;
     }
@@ -122,6 +135,12 @@ class LineShape extends Shape {
         int nw = Math.abs(x - endX);
         int nh = Math.abs(y - endY);
         return new Rectangle(nx, ny, nw, nh);
+    }
+    
+    @Override
+    public void scale(double factor) {
+        endX = x + (int)((endX - x) * factor);
+        endY = y + (int)((endY - y) * factor);
     }
 }
 
@@ -177,6 +196,12 @@ class RectangleShape extends Shape {
         x += dx;
         y += dy;
     }
+
+    @Override
+    public void scale(double factor) {
+        width = (int)(width * factor);
+        height = (int)(height * factor);
+    }
 }
 
 class EllipticalShape extends Shape {
@@ -230,6 +255,12 @@ class EllipticalShape extends Shape {
     public void move(int dx, int dy) {
         x += dx;
         y += dy;
+    }
+
+    @Override
+    public void scale(double factor) {
+        width = (int)(width * factor);
+        height = (int)(height * factor);
     }
 }
 
@@ -299,6 +330,27 @@ class PentagonShape extends Shape {
 
         for (int i = 0; i < pointsY.length; i++) {
             pointsY[i] += dy;
+        }
+    }
+
+    @Override
+    public void scale(double factor) {
+        int centerX = 0;
+        int centerY = 0;
+
+        for (int i = 0; i < pointsX.length; i++) {
+            centerX += pointsX[i];
+            centerY += pointsY[i];
+        }
+
+        centerX /= pointsX.length;
+        centerY /= pointsY.length;
+
+        for (int i = 0; i < pointsX.length; i++) {
+            int dx = pointsX[i] - centerX;
+            int dy = pointsY[i] - centerY;
+            pointsX[i] = centerX + (int)(dx * factor);
+            pointsY[i] = centerY + (int)(dy * factor);
         }
     }
 }
@@ -373,6 +425,27 @@ class HexagonShape extends Shape {
             pointsY[i] += dy;
         }
     }
+
+    @Override
+    public void scale(double factor) {
+        int centerX = 0;
+        int centerY = 0;
+
+        for (int i = 0; i < pointsX.length; i++) {
+            centerX += pointsX[i];
+            centerY += pointsY[i];
+        }
+
+        centerX /= pointsX.length;
+        centerY /= pointsY.length;
+
+        for (int i = 0; i < pointsX.length; i++) {
+            int dx = pointsX[i] - centerX;
+            int dy = pointsY[i] - centerY;
+            pointsX[i] = centerX + (int)(dx * factor);
+            pointsY[i] = centerY + (int)(dy * factor);
+        }
+    }
 }
 
 class TriangleShape extends Shape {
@@ -438,6 +511,27 @@ class TriangleShape extends Shape {
             pointsY[i] += dy;
         }
     }
+
+    @Override
+    public void scale(double factor) {
+        int centerX = 0;
+        int centerY = 0;
+
+        for (int i = 0; i < pointsX.length; i++) {
+            centerX += pointsX[i];
+            centerY += pointsY[i];
+        }
+
+        centerX /= pointsX.length;
+        centerY /= pointsY.length;
+
+        for (int i = 0; i < pointsX.length; i++) {
+            int dx = pointsX[i] - centerX;
+            int dy = pointsY[i] - centerY;
+            pointsX[i] = centerX + (int)(dx * factor);
+            pointsY[i] = centerY + (int)(dy * factor);
+        }
+    }
 }
 
 class TextShape extends Shape {
@@ -468,6 +562,11 @@ class TextShape extends Shape {
     public void move(int dx, int dy) {
         x += dx;
         y += dy;
+    }
+
+    @Override
+    public void scale(double factor) {
+
     }
 }
 
@@ -522,7 +621,29 @@ class Pencil implements Drawable {
             line.move(dx, dy);
         }
     }
+
+    @Override
+    public void scale(double factor) {
+        for (LineShape line : lines) {
+            line.scale(factor);
+        }
+    }
+
+    @Override
+    public void setStroke(BasicStroke stroke) {
+        for (LineShape d : lines) {
+            d.setStroke(stroke);
+        }
+    }
+
+    @Override
+    public  void setColor(Color color) {
+        for (LineShape l : lines) {
+            l.setColor(color);
+        }
+    }
 }
+
 
 class Polygon implements Drawable {
     private ArrayList<Integer> pointsX;
@@ -557,6 +678,16 @@ class Polygon implements Drawable {
         return new Rectangle(minX, minY, maxX - minX, maxY - minY);
     }
 
+
+    @Override
+    public  void setStroke(BasicStroke stroke) {
+        this.stroke = stroke;
+    }
+
+    @Override
+    public  void setColor(Color color) {
+        this.color = color;
+    }
     @Override
     public void Draw(Graphics2D g2) {
         g2.setColor(color);
@@ -611,6 +742,11 @@ class Polygon implements Drawable {
 
         pointsY.replaceAll(integer -> integer + dy);
     }
+
+    @Override
+    public void scale(double factor) {
+
+    }
 }
 
 class Selected implements Drawable {
@@ -660,5 +796,26 @@ class Selected implements Drawable {
 
     public int getSelectedSize() {
         return shapes.size();
+    }
+
+    @Override
+    public void scale(double factor) {
+        for (Drawable d : shapes) {
+            d.scale(factor);
+        }
+    }
+
+    @Override
+    public void setStroke(BasicStroke stroke) {
+        for (Drawable d : shapes) {
+            d.setStroke(stroke);
+        }
+    }
+
+    @Override
+    public void setColor(Color color) {
+        for (Drawable d : shapes) {
+            d.setColor(color);
+        }
     }
 }
