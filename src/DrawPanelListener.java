@@ -17,9 +17,9 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     private boolean transparent;
     private int grouped;
     private BasicStroke stroke = new BasicStroke((float) 2);
-    private Stack<Shape> shapes;
-    private Stack<Shape> removed;
-    private Shape lastState;
+    private Stack<Drawable> graphics;
+    private Stack<Drawable> removed;
+    private Drawable lastState;
     private BufferedImage canvas;
     private Graphics2D graphics2D;
     private ETools activeTool;
@@ -45,8 +45,8 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         lastColor = Color.WHITE;
         textDialog = new TextDialog(StartUp.mainWindow);
 
-        this.shapes = new Stack<Shape>();
-        this.removed = new Stack<Shape>();
+        this.graphics = new Stack<Drawable>();
+        this.removed = new Stack<Drawable>();
         this.grouped = 1;
         this.transparent = true;
     }
@@ -68,14 +68,14 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         lastColor = Color.WHITE;
         textDialog = new TextDialog(StartUp.mainWindow);
 
-        this.shapes = new Stack<Shape>();
-        this.removed = new Stack<Shape>();
+        this.graphics = new Stack<Drawable>();
+        this.removed = new Stack<Drawable>();
         this.grouped = 1;
         this.transparent = true;
     }
 
     public void changeDrawPanelSize(int width, int height) {
-        shapes.clear();
+        graphics.clear();
         removed.clear();
         lastState = null;
 
@@ -102,66 +102,13 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        for (Shape s : shapes) {
-            draw(g2, s);
+        for (Drawable s : graphics) {
+            s.Draw(g2);
         }
         if (lastState != null) {
-            draw(g2, lastState);
+            lastState.Draw(g2);
         }
 
-    }
-
-    private void draw(Graphics2D g2, Shape s) {
-        g2.setColor(s.getColor());
-        g2.setStroke(s.getStroke());
-        switch (s.getShape()) {
-            case LINE:
-                g2.drawLine(s.getX1(), s.getY1(), s.getX2(), s.getY2());
-                break;
-            case RECTANGLE:
-                g2.drawRect(s.getX1(), s.getY1(), s.getX2(), s.getY2());
-                if (!s.transparent) {
-                    g2.setColor(s.getFillColor());
-                    g2.fillRect(s.getX1(), s.getY1(), s.getX2(), s.getY2());
-                }
-                break;
-            case ELLIPTICAL:
-                g2.drawOval(s.getX1(), s.getY1(), s.getX2(), s.getY2());
-                if (!s.transparent) {
-                    g2.setColor(s.getFillColor());
-                    g2.fillOval(s.getX1(), s.getY1(), s.getX2(), s.getY2());
-                }
-                break;
-            case PENTAGON:
-                g2.drawPolygon(s.getPointsX(), s.getPointsY(), 5);
-                if (!s.transparent) {
-                    g2.setColor(s.getFillColor());
-                    g2.fillPolygon(s.getPointsX(), s.getPointsY(), 5);
-                }
-                break;
-            case HEXAGON:
-                g2.drawPolygon(s.getPointsX(), s.getPointsY(), 6);
-                if (!s.transparent) {
-                    g2.setColor(s.getFillColor());
-                    g2.fillPolygon(s.getPointsX(), s.getPointsY(), 6);
-                }
-                break;
-            case TRIANGLE:
-                g2.drawPolygon(s.getPointsX(), s.getPointsY(), 3);
-                if (!s.transparent) {
-                    g2.setColor(s.getFillColor());
-                    g2.fillPolygon(s.getPointsX(), s.getPointsY(), 3);
-                }
-                break;
-            case ARC:
-                g2.drawArc(s.getRectangle().x, s.getRectangle().y, s.getRectangle().width, s.getRectangle().height,
-                        s.getStartAngle(), s.getDrawAngle());
-                if (!s.transparent) {
-                    g2.fillArc(s.getRectangle().x, s.getRectangle().y, s.getRectangle().width, s.getRectangle().height,
-                            s.getStartAngle(), s.getDrawAngle());
-                }
-                break;
-        }
     }
 
     public void setTool(ETools tool) {
@@ -193,7 +140,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         Dimension dimension = StartUp.mainWindow.getDrawPanel().getSize();
         graphics2D.setPaint(Color.white);
         graphics2D.fillRect(0, 0, dimension.width, dimension.height);
-        shapes.removeAllElements();
+        graphics.removeAllElements();
         removed.removeAllElements();
         StartUp.mainWindow.getDrawPanel().repaint();
         graphics2D.setColor(currentColor);
@@ -236,38 +183,18 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     }
 
     public void quash() {
-        if (shapes.size() <= 0) {
+        if (graphics.size() <= 0) {
             return;
         }
 
-        Shape lastRemoved = shapes.pop();
+        Drawable lastRemoved = graphics.pop();
         removed.push(lastRemoved);
-
-        if (lastRemoved.group == 0) {
-            repaint();
-        } else if (lastRemoved.group != 0) {
-            while (shapes.isEmpty() == false && shapes.peek().group == lastRemoved.group) {
-                removed.push(shapes.pop());
-                repaint();
-            }
-        }
+        repaint();
     }
 
     public void recover() {
-        if (removed.size() > 0 && removed.peek().group == 0) {
-            shapes.push(removed.pop());
-            repaint();
-        } else if (removed.size() > 0 && removed.peek().group != 0) {
-
-            Shape lastRemoved = removed.pop();
-            shapes.push(lastRemoved);
-
-            while (removed.isEmpty() == false && removed.peek().group == lastRemoved.group) {
-                shapes.push(removed.pop());
-                repaint();
-
-            }
-        }
+        graphics.push(removed.pop());
+        repaint();
     }
 
     public Color getCurrentColor() {
@@ -313,18 +240,21 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     public void mousePressed(MouseEvent e) {
         x1 = e.getX();
         y1 = e.getY();
+        if (activeTool == ETools.PENCIL) {
+            lastState = new Pencil();
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         if (lastState != null && activeTool != ETools.ARC) {
-            shapes.push(lastState);
+            graphics.push(lastState);
             lastState = null;
         } else if (activeTool == ETools.TEXT) {
             int result = textDialog.showCustomDialog(StartUp.mainWindow);
             if (result == TextDialog.APPLY_OPTION) {
-                shapes.push(new Shape(x1, y1, textDialog.getInputSize(), textDialog.getFont(),
-                        currentColor, stroke, ETools.TEXT, textDialog.getText()));
+                graphics.push(new TextShape(x1, y1, currentColor, stroke,
+                        textDialog.getFont(), textDialog.getInputSize(), textDialog.getText()));
             }
         } else if (activeTool == ETools.BUCKET) {
             floodFill(new Point2D.Double(x1, y1), currentColor);
@@ -368,85 +298,101 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
 
         switch (activeTool) {
             case ERASER:
-                shapes.push(new Shape(x1, y1, x2, y2, Color.white, stroke, ETools.LINE, grouped));
+                graphics.push(new LineShape(x1, y1, x2, y2, Color.white, stroke));
                 StartUp.mainWindow.getDrawPanel().repaint();
                 x1 = x2;
                 y1 = y2;
                 break;
             case PENCIL:
-                shapes.push(new Shape(x1, y1, x2, y2, primary, stroke, ETools.LINE, grouped));
+                // Todo: 需要对 pencil 做特殊定义
+                Pencil p = (Pencil) lastState;
+                p.addLine(new LineShape(x1, y1, x2, y2, primary, stroke));
                 StartUp.mainWindow.getDrawPanel().repaint();
                 x1 = x2;
                 y1 = y2;
                 break;
             case LINE:
-                lastState = new Shape(x1, y1, x2, y2, primary, stroke, ETools.LINE, secondary, transparent);
+                lastState = new LineShape(x1, y1, x2, y2, primary, stroke);
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case RECTANGLE:
+                RectangleShape rectangleShape = null;
                 if (x1 < x2 && y1 < y2) {
-                    lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.RECTANGLE, secondary, transparent);
+                    rectangleShape = new RectangleShape(x1, y1, x2 - x1, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y1 < y2) {
-                    lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.RECTANGLE, secondary, transparent);
+                    rectangleShape = new RectangleShape(x2, y1, x1- x2, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x1 < x2 && y2 < y1) {
-                    lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.RECTANGLE, secondary, transparent);
+                    rectangleShape = new RectangleShape(x1, y2, x2 - x1, y1 - y2, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y2 < y1) {
-                    lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.RECTANGLE, secondary, transparent);
+                    rectangleShape = new RectangleShape(x2, y2, x1 - x2, y1 - y2, primary, stroke,  secondary, transparent);
                 }
-                if (lastState!= null && e.isShiftDown()) {
-                    lastState.setY2(lastState.getX2());
+
+                if (rectangleShape !=  null && e.isShiftDown()) {
+                    rectangleShape.setHeight(rectangleShape.getWidth());
                 }
+                lastState = rectangleShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case ELLIPTICAL:
+                ELLIPTICALShape ellipticalShape = null;
                 if (x1 < x2 && y1 < y2) {
-                    lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.ELLIPTICAL, secondary, transparent);
+                    ellipticalShape = new ELLIPTICALShape(x1, y1, x2 - x1, y2 - y1, primary, stroke,  secondary, transparent);
                 } else if (x2 < x1 && y1 < y2) {
-                    lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.ELLIPTICAL, secondary, transparent);
+                    ellipticalShape = new ELLIPTICALShape(x2, y1, x1 - x2, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x1 < x2 && y2 < y1) {
-                    lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.ELLIPTICAL, secondary, transparent);
+                    ellipticalShape = new ELLIPTICALShape(x1, y2, x2 - x1, y1 - y2, primary, stroke,  secondary, transparent);
                 } else if (x2 < x1 && y2 < y1) {
-                    lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.ELLIPTICAL, secondary, transparent);
+                    ellipticalShape = new ELLIPTICALShape(x2, y2, x1 - x2, y1 - y2, primary, stroke,  secondary, transparent);
                 }
-                if (lastState!= null && e.isShiftDown()) {
-                   lastState.setY2(lastState.getX2());
+                if (ellipticalShape != null && e.isShiftDown()) {
+                    ellipticalShape.setHeight(ellipticalShape.getWidth());
                 }
+
+                lastState = ellipticalShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case PENTAGON:
+                PentagonShape pentagonShape = null;
+        
                 if (x1 < x2 && y1 < y2) {
-                    lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.PENTAGON, secondary, transparent);
+                    pentagonShape = new PentagonShape(x1, y1, x2 - x1, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y1 < y2) {
-                    lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.PENTAGON, secondary, transparent);
+                    pentagonShape = new PentagonShape(x2, y1, x1 - x2, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x1 < x2 && y2 < y1) {
-                    lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.PENTAGON, secondary, transparent);
+                    pentagonShape = new PentagonShape(x1, y2, x2 - x1, y1 - y2, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y2 < y1) {
-                    lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.PENTAGON, secondary, transparent);
+                    pentagonShape = new PentagonShape(x2, y2, x1 - x2, y1 - y2, primary, stroke, secondary, transparent);
                 }
+                lastState = pentagonShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case HEXAGON:
+                HexagonShape hexagonShape = null;
+
                 if (x1 < x2 && y1 < y2) {
-                    lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.HEXAGON, secondary, transparent);
+                    hexagonShape = new HexagonShape(x1, y1, x2 - x1, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y1 < y2) {
-                    lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.HEXAGON, secondary, transparent);
+                    hexagonShape = new HexagonShape(x2, y1, x1 - x2, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x1 < x2 && y2 < y1) {
-                    lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.HEXAGON, secondary, transparent);
+                    hexagonShape = new HexagonShape(x1, y2, x2 - x1, y1 - y2, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y2 < y1) {
-                    lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.HEXAGON, secondary, transparent);
+                    hexagonShape = new HexagonShape(x2, y2, x1 - x2, y1 - y2, primary, stroke, secondary, transparent);
                 }
+                lastState = hexagonShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case TRIANGLE:
+                TriangleShape triangleShape = null;
                 if (x1 < x2 && y1 < y2) {
-                    lastState = new Shape(x1, y1, x2 - x1, y2 - y1, primary, stroke, ETools.TRIANGLE, secondary, transparent);
+                    triangleShape = new TriangleShape(x1, y1, x2 - x1, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y1 < y2) {
-                    lastState = new Shape(x2, y1, x1 - x2, y2 - y1, primary, stroke, ETools.TRIANGLE, secondary, transparent);
+                    triangleShape = new TriangleShape(x2, y1, x1 - x2, y2 - y1, primary, stroke, secondary, transparent);
                 } else if (x1 < x2 && y2 < y1) {
-                    lastState = new Shape(x1, y2, x2 - x1, y1 - y2, primary, stroke, ETools.TRIANGLE, secondary, transparent);
+                    triangleShape = new TriangleShape(x1, y2, x2 - x1, y1 - y2, primary, stroke, secondary, transparent);
                 } else if (x2 < x1 && y2 < y1) {
-                    lastState = new Shape(x2, y2, x1 - x2, y1 - y2, primary, stroke, ETools.TRIANGLE, secondary, transparent);
+                    triangleShape = new TriangleShape(x2, y2, x1 - x2, y1 - y2, primary, stroke, secondary, transparent);
                 }
+                lastState = triangleShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
         }

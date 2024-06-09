@@ -1,128 +1,63 @@
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Stack;
 
-public class Shape {
+
+interface Drawable {
+    public void Draw(Graphics2D g2);
+}
+
+public abstract class Shape implements Drawable {
     public boolean transparent;
-    public int group = 0;
 
-    private int x1, x2;
-    private int y1, y2;
+    protected int x, y;
 
-    private Color color;
-    private Color fillColor;
-    private BasicStroke stroke;
-    private String message;
+    protected Color color;
+    protected Color fillColor;
+    protected BasicStroke stroke;
 
-    // 多边形用
-    private int[] pointsX;
-    private int[] pointsY;
+    protected ETools shape;
 
-    // 圆弧用
-    private Rectangle rectangle;
-    private int startAngle;
-    private int drawAngle;
-
-    private ETools shape;
-    private Font font;
-
-    public Shape(Rectangle rect, Color color, BasicStroke stroke, ETools shape, Color fill, boolean transparent, int startAngle, int drawAngle) {
-        rectangle = rect;
+    public Shape(int x, int y, Color color, BasicStroke stroke, ETools shape) {
+        this.x = x;
+        this.y = y;
         this.color = color;
         this.stroke = stroke;
         this.shape = shape;
-        this.fillColor = fill;
+        this.fillColor = null;
+        this.transparent = true;
+    }
+
+    public Shape(int x, int y, Color color, BasicStroke stroke, ETools shape, Color fillColor, boolean transparent) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.stroke = stroke;
+        this.shape = shape;
+        this.fillColor = fillColor;
         this.transparent = transparent;
-        this.startAngle = startAngle;
-        this.drawAngle = drawAngle;
-    }
-
-    public Shape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke, ETools shape, Color fill, boolean transparent) {
-        this.x1 = x1;
-        this.x2 = x2;
-        this.y1 = y1;
-        this.y2 = y2;
-        this.color = color;
-        this.stroke = stroke;
-        this.shape = shape;
-        this.group = 0;
-        this.fillColor = fill;
-        this.transparent = transparent;
-        if (shape == ETools.PENTAGON) {
-            setPentagonPoints();
-        }
-        if (shape == ETools.HEXAGON) {
-            setHexagonPoints();
-        }
-        if (shape == ETools.TRIANGLE) {
-            setTrianglePoints();
-        }
-    }
-
-    public Shape(int x1, int y1, int fontSize, Font font, Color color, BasicStroke stroke, ETools shape, String message) {
-        this.x1 = x1;
-        this.y1 = y1;
-        this.y2 = 0;
-        this.font = font;
-        this.x2 = fontSize;
-        this.color = color;
-        this.stroke = stroke;
-        this.shape = shape;
-        this.group = 0;
-        this.message = message;
-    }
-
-    public Shape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke, ETools shape, int group) {
-        this.x1 = x1;
-        this.x2 = x2;
-        this.y1 = y1;
-        this.y2 = y2;
-        this.color = color;
-        this.stroke = stroke;
-        this.shape = shape;
-        this.group = group;
     }
 
     public ETools getShape() {
         return this.shape;
     }
 
-    public String getMessage() {
-        return this.message;
+
+    public int getX() {
+        return this.x;
     }
 
-    public Font getFont() {
-        return this.font;
+    public void setX(int x) {
+        this.x = x;
     }
 
-    public int getX1() {
-        return this.x1;
+
+    public int getY() {
+        return this.y;
     }
 
-    public int getX2() {
-        return this.x2;
-    }
-
-    public int getY1() {
-        return this.y1;
-    }
-
-    public int getY2() {
-        return this.y2;
-    }
-
-    public void setX1(int x) {
-        this.x1 = x;
-    }
-
-    public void setX2(int x) {
-        this.x2 = x;
-    }
-
-    public void setY1(int y) {
-        this.y1 = y;
-    }
-
-    public void setY2(int y) {
-        this.y2 = y;
+    public void setY(int y) {
+        this.y = y;
     }
 
     public Color getColor() {
@@ -141,76 +76,304 @@ public class Shape {
         return this.transparent;
     }
 
-    public int getGroup() {
-        return this.group;
+    protected abstract void draw(Graphics2D g2);
+
+    public void Draw(Graphics2D g2) {
+        g2.setColor(getColor());
+        g2.setStroke(getStroke());
+        draw(g2);
+    }
+}
+
+class LineShape extends Shape {
+
+    private int endX, endY;
+
+    public LineShape(int x, int y, int endX, int endY, Color color, BasicStroke stroke) {
+        super(x, y, color, stroke, ETools.LINE);
+        this.endX = endX;
+        this.endY = endY;
     }
 
-    public int[] getPointsX() {
-        return pointsX;
+    @Override
+    protected void draw(Graphics2D g2) {
+        g2.drawLine(x, y, endX, endY);
+    }
+}
+
+class RectangleShape extends Shape {
+    private int width, height;
+
+    public int getWidth() {
+        return this.width;
     }
 
-    public int[] getPointsY() {
-        return pointsY;
+    public void setWidth(int width) {
+        this.width = width;
     }
 
-    private void setHexagonPoints() {
+    public int getHeight() {
+        return this.height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public RectangleShape(int x, int y, int width, int height, Color color, BasicStroke stroke) {
+        super(x, y, color, stroke, ETools.RECTANGLE);
+        this.width = width;
+        this.height = height;
+    }
+
+
+    public RectangleShape(int x, int y, int width, int height, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
+        super(x, y, color, stroke, ETools.RECTANGLE, fillColor, transparent);
+        this.width = width;
+        this.height = height;
+    }
+
+
+    @Override
+    protected void draw(Graphics2D g2) {
+
+        g2.drawRect(x, y, width, height);
+        if (!transparent) {
+            g2.setColor(getFillColor());
+            g2.fillRect(x, y, width, height);
+        }
+    }
+}
+
+class ELLIPTICALShape extends Shape {
+    private int width, height;
+
+    public int getWidth() {
+        return this.width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return this.height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public ELLIPTICALShape(int x, int y, int width, int height, Color color, BasicStroke stroke) {
+        super(x, y, color, stroke, ETools.RECTANGLE);
+        this.width = width;
+        this.height = height;
+    }
+
+
+    public ELLIPTICALShape(int x, int y, int width, int height, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
+        super(x, y, color, stroke, ETools.RECTANGLE, fillColor, transparent);
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    protected void draw(Graphics2D g2) {
+
+        g2.drawOval(x, y, width, height);
+        if (!transparent) {
+            g2.setColor(getFillColor());
+            g2.fillOval(x, y, width, height);
+        }
+    }
+}
+
+class PentagonShape extends Shape {
+    private int[] pointsX;
+    private int[] pointsY;
+
+    private int x2, y2;
+
+    public PentagonShape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke) {
+        super(x1, y1, color, stroke, ETools.PENTAGON);
+        this.x2 = x2;
+        this.y2 = y2;
+        initPoints();
+    }
+
+    public PentagonShape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
+        super(x1, y1, color, stroke, ETools.PENTAGON, fillColor, transparent);
+        this.x2 = x2;
+        this.y2 = y2;
+        initPoints();
+    }
+
+    private void initPoints() {
         pointsX = new int[]{
-                x1 + x2 / 4,
-                x1,
-                x1 + x2 / 4,
-                x1 + x2 * 3 / 4,
-                x1 + x2,
-                x1 + x2 * 3 / 4
+                x + x2 / 2,
+                x,
+                x + (int) (x2 / 4.3),
+                x + (int) (x2 * 3.3 / 4.3),
+                x + x2
         };
         pointsY = new int[]{
-                y1,
-                y1 + y2 / 2,
-                y1 + y2,
-                y1 + y2,
-                y1 + y2 / 2,
-                y1
+                y,
+                y + (int) (((Math.sqrt(3) - 0.9) / 2) * y2),
+                y + y2,
+                y + y2,
+                y + (int) (((Math.sqrt(3) - 0.9) / 2) * y2)
         };
+
     }
 
-    private void setPentagonPoints() {
+
+    @Override
+    protected void draw(Graphics2D g2) {
+        g2.drawPolygon(pointsX, pointsY, 5);
+        if (!transparent) {
+            g2.setColor(getFillColor());
+            g2.fillPolygon(pointsX, pointsY, 5);
+        }
+    }
+}
+
+class HexagonShape extends Shape {
+    private int[] pointsX;
+    private int[] pointsY;
+
+    private int x2, y2;
+
+
+    public HexagonShape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke) {
+        super(x1, y1, color, stroke, ETools.PENTAGON);
+        this.x2 = x2;
+        this.y2 = y2;
+        initPoints();
+    }
+
+    public HexagonShape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
+        super(x1, y1, color, stroke, ETools.PENTAGON, fillColor, transparent);
+        this.x2 = x2;
+        this.y2 = y2;
+        initPoints();
+    }
+
+
+    private void initPoints() {
         pointsX = new int[]{
-                x1 + x2 / 2,
-                x1,
-                x1 + (int) (x2 / 4.3),
-                x1 + (int) (x2 * 3.3 / 4.3),
-                x1 + x2
+                x + x2 / 4,
+                x,
+                x + x2 / 4,
+                x + x2 * 3 / 4,
+                x + x2,
+                x + x2 * 3 / 4
         };
         pointsY = new int[]{
-                y1,
-                y1 + (int) (((Math.sqrt(3) - 0.9) / 2) * y2),
-                y1 + y2,
-                y1 + y2,
-                y1 + (int) (((Math.sqrt(3) - 0.9) / 2) * y2)
+                y,
+                y + y2 / 2,
+                y + y2,
+                y + y2,
+                y + y2 / 2,
+                y
         };
     }
 
-    private void setTrianglePoints() {
+    @Override
+    protected void draw(Graphics2D g2) {
+        g2.drawPolygon(pointsX, pointsY, 6);
+        if (!transparent) {
+            g2.setColor(getFillColor());
+            g2.fillPolygon(pointsX, pointsY, 6);
+        }
+    }
+}
+
+class TriangleShape extends Shape {
+    private int[] pointsX;
+    private int[] pointsY;
+
+    private int x2, y2;
+
+
+    public TriangleShape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke) {
+        super(x1, y1, color, stroke, ETools.PENTAGON);
+        this.x2 = x2;
+        this.y2 = y2;
+        initPoints();
+    }
+
+    public TriangleShape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
+        super(x1, y1, color, stroke, ETools.PENTAGON, fillColor, transparent);
+        this.x2 = x2;
+        this.y2 = y2;
+        initPoints();
+    }
+
+    private void initPoints() {
         pointsX = new int[]{
-                x1 + x2 / 2,
-                x1,
-                x1 + x2
+                x + x2 / 2,
+                x,
+                x + x2
         };
         pointsY = new int[]{
-                y1,
-                y1 + y2,
-                y1 + y2
+                y,
+                y + y2,
+                y + y2
         };
     }
 
-    public Rectangle getRectangle() {
-        return rectangle;
+    @Override
+    protected void draw(Graphics2D g2) {
+        g2.drawPolygon(pointsX, pointsY, 3);
+        if (!transparent) {
+            g2.setColor(getFillColor());
+            g2.fillPolygon(pointsX, pointsY, 3);
+        }
+    }
+}
+
+class TextShape extends Shape {
+    private Font font;
+    private int fontSize;
+    private String message;
+
+    public TextShape(int x, int y, Color color, BasicStroke stroke, Font font, int fontSize, String message) {
+        super(x, y, color, stroke, ETools.TEXT);
+        this.font = font;
+        this.fontSize = fontSize;
+        this.message = message;
     }
 
-    public int getStartAngle() {
-        return startAngle;
+    @Override
+    protected void draw(Graphics2D g2) {
+        g2.setFont(font);
+        g2.drawString(message, x, y);
+    }
+}
+
+class Pencil implements Drawable {
+    private ArrayList<LineShape> lines = new ArrayList<>();
+
+    @Override
+    public void Draw(Graphics2D g2) {
+        for (LineShape line : lines) {
+            line.Draw(g2);
+        }
     }
 
-    public int getDrawAngle() {
-        return drawAngle;
+    public void addLine(LineShape line) {
+        lines.add(line);
+    }
+
+    public void popLine() {
+        lines.remove(lines.size() - 1);
+    }
+
+    public void clear() {
+        lines.clear();
+    }
+
+    public int getLines() {
+        return lines.size();
     }
 }
