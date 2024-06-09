@@ -427,6 +427,8 @@ public class PaintMainWindow extends JFrame implements ActionListener {
             } else {
                 StartUp.mainWindow.getDrawPanel().setTransparency(true);
             }
+        } else if (e.getSource() == selectBtn) {
+            ((DrawPanelListener) drawPanel).setTool(ETools.SELECT);
         }
     }
 

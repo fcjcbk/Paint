@@ -5,6 +5,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Stack;
 
 public class DrawPanelListener extends JPanel implements MouseListener, MouseMotionListener {
@@ -17,9 +18,9 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     private boolean transparent;
     private int grouped;
     private BasicStroke stroke = new BasicStroke((float) 2);
-    private Stack<Drawable> graphics;
+    private ArrayList<Drawable> graphics;
     private Stack<Drawable> removed;
-    private Drawable lastState;
+    private Drawable currentState;
     private BufferedImage canvas;
     private Graphics2D graphics2D;
     private ETools activeTool;
@@ -45,7 +46,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         lastColor = Color.WHITE;
         textDialog = new TextDialog(StartUp.mainWindow);
 
-        this.graphics = new Stack<Drawable>();
+        this.graphics = new ArrayList<>();
         this.removed = new Stack<Drawable>();
         this.grouped = 1;
         this.transparent = true;
@@ -68,7 +69,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         lastColor = Color.WHITE;
         textDialog = new TextDialog(StartUp.mainWindow);
 
-        this.graphics = new Stack<Drawable>();
+        this.graphics = new ArrayList<>();
         this.removed = new Stack<Drawable>();
         this.grouped = 1;
         this.transparent = true;
@@ -77,7 +78,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     public void changeDrawPanelSize(int width, int height) {
         graphics.clear();
         removed.clear();
-        lastState = null;
+        currentState = null;
 
         Dimension temp = new Dimension(width, height);
         setSize(temp);
@@ -105,8 +106,8 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         for (Drawable s : graphics) {
             s.Draw(g2);
         }
-        if (lastState != null) {
-            lastState.Draw(g2);
+        if (currentState != null) {
+            currentState.Draw(g2);
         }
 
     }
@@ -140,7 +141,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         Dimension dimension = StartUp.mainWindow.getDrawPanel().getSize();
         graphics2D.setPaint(Color.white);
         graphics2D.fillRect(0, 0, dimension.width, dimension.height);
-        graphics.removeAllElements();
+        graphics.clear();
         removed.removeAllElements();
         StartUp.mainWindow.getDrawPanel().repaint();
         graphics2D.setColor(currentColor);
@@ -182,18 +183,28 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
 //        }
     }
 
+    private Drawable popGraphics() {
+        Drawable d = graphics.get(graphics.size() - 1);
+        graphics.remove(graphics.size() - 1);
+        return d;
+    }
+
+    private void pushGraphics(Drawable d) {
+        graphics.add(d);
+    }
+
     public void quash() {
         if (graphics.size() <= 0) {
             return;
         }
 
-        Drawable lastRemoved = graphics.pop();
+        Drawable lastRemoved = popGraphics();
         removed.push(lastRemoved);
         repaint();
     }
 
     public void recover() {
-        graphics.push(removed.pop());
+        pushGraphics(removed.pop());
         repaint();
     }
 
@@ -233,22 +244,22 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 ex.printStackTrace();
             }
         } else if (activeTool == ETools.POLYGON) {
-            if (lastState == null) {
+            if (currentState == null) {
                 Polygon p = new Polygon(currentColor, stroke);
                 p.addPoint(x1, y1);
-                lastState = p;
+                currentState = p;
                 repaint();
                 return;
             }
 
-            Polygon p = (Polygon) lastState;
+            Polygon p = (Polygon) currentState;
             p.addPoint(x1, y1);
             p.setPreviewPoint(x1, y1);
 
             if (e.getClickCount() == 2 && p.size() > 2) {
                 p.setFinish(true);
-                graphics.push(p);
-                lastState = null;
+                pushGraphics(p);
+                currentState = null;
             }
             repaint();
 
@@ -261,24 +272,27 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         y1 = e.getY();
         switch (activeTool) {
             case PENCIL:
-                lastState = new Pencil();
+                currentState = new Pencil();
                 break;
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (lastState != null && activeTool != ETools.POLYGON) {
-            graphics.push(lastState);
-            lastState = null;
+        if (currentState != null && activeTool != ETools.POLYGON && activeTool != ETools.SELECT) {
+            pushGraphics(currentState);
+            currentState = null;
         } else if (activeTool == ETools.TEXT) {
             int result = textDialog.showCustomDialog(StartUp.mainWindow);
             if (result == TextDialog.APPLY_OPTION) {
-                graphics.push(new TextShape(x1, y1, currentColor, stroke,
+                pushGraphics(new TextShape(x1, y1, currentColor, stroke,
                         textDialog.getFont(), textDialog.getInputSize(), textDialog.getText()));
             }
         } else if (activeTool == ETools.BUCKET) {
             floodFill(new Point2D.Double(x1, y1), currentColor);
+        } else if (activeTool == ETools.SELECT) {
+            Selected selected = new Selected((RectangleShape)currentState, graphics);
+            currentState = selected;
         }
         if (dragged) {
             grouped++;
@@ -319,21 +333,21 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
 
         switch (activeTool) {
             case ERASER:
-                graphics.push(new LineShape(x1, y1, x2, y2, Color.white, stroke));
+                pushGraphics(new LineShape(x1, y1, x2, y2, Color.white, stroke));
                 StartUp.mainWindow.getDrawPanel().repaint();
                 x1 = x2;
                 y1 = y2;
                 break;
             case PENCIL:
                 // Todo: 需要对 pencil 做特殊定义
-                Pencil p = (Pencil) lastState;
+                Pencil p = (Pencil) currentState;
                 p.addLine(new LineShape(x1, y1, x2, y2, primary, stroke));
                 StartUp.mainWindow.getDrawPanel().repaint();
                 x1 = x2;
                 y1 = y2;
                 break;
             case LINE:
-                lastState = new LineShape(x1, y1, x2, y2, primary, stroke);
+                currentState = new LineShape(x1, y1, x2, y2, primary, stroke);
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case RECTANGLE:
@@ -351,7 +365,24 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 if (rectangleShape != null && e.isShiftDown()) {
                     rectangleShape.setHeight(rectangleShape.getWidth());
                 }
-                lastState = rectangleShape;
+                currentState = rectangleShape;
+                StartUp.mainWindow.getDrawPanel().repaint();
+                break;
+            case SELECT:
+                RectangleShape selectShape = null;
+                float[] dashPattern = {10, 10};  // 10 pixel line, 10 pixel space
+                BasicStroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0);
+                if (x1 < x2 && y1 < y2) {
+                    selectShape = new RectangleShape(x1, y1, x2 - x1, y2 - y1, primary, dashedStroke, secondary, transparent);
+                } else if (x2 < x1 && y1 < y2) {
+                    selectShape = new RectangleShape(x2, y1, x1 - x2, y2 - y1, primary, dashedStroke, secondary, transparent);
+                } else if (x1 < x2 && y2 < y1) {
+                    selectShape = new RectangleShape(x1, y2, x2 - x1, y1 - y2, primary, dashedStroke, secondary, transparent);
+                } else if (x2 < x1 && y2 < y1) {
+                    selectShape = new RectangleShape(x2, y2, x1 - x2, y1 - y2, primary, dashedStroke, secondary, transparent);
+                }
+
+                currentState = selectShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case ELLIPTICAL:
@@ -369,7 +400,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                     ellipticalShape.setHeight(ellipticalShape.getWidth());
                 }
 
-                lastState = ellipticalShape;
+                currentState = ellipticalShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case PENTAGON:
@@ -384,7 +415,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 } else if (x2 < x1 && y2 < y1) {
                     pentagonShape = new PentagonShape(x2, y2, x1 - x2, y1 - y2, primary, stroke, secondary, transparent);
                 }
-                lastState = pentagonShape;
+                currentState = pentagonShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case HEXAGON:
@@ -399,7 +430,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 } else if (x2 < x1 && y2 < y1) {
                     hexagonShape = new HexagonShape(x2, y2, x1 - x2, y1 - y2, primary, stroke, secondary, transparent);
                 }
-                lastState = hexagonShape;
+                currentState = hexagonShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case TRIANGLE:
@@ -413,7 +444,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 } else if (x2 < x1 && y2 < y1) {
                     triangleShape = new TriangleShape(x2, y2, x1 - x2, y1 - y2, primary, stroke, secondary, transparent);
                 }
-                lastState = triangleShape;
+                currentState = triangleShape;
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
         }
@@ -423,8 +454,8 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     @Override
     public void mouseMoved(MouseEvent e) {
         StartUp.mainWindow.setMousePosLabel(e.getX(), e.getY());
-        if (activeTool == ETools.POLYGON && lastState != null) {
-            Polygon p = (Polygon) lastState;
+        if (activeTool == ETools.POLYGON && currentState != null) {
+            Polygon p = (Polygon) currentState;
             p.setPreviewPoint(e.getX(), e.getY());
             repaint();
         }

@@ -1,9 +1,13 @@
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 
 interface Drawable {
-    public void Draw(Graphics2D g2);
+    void Draw(Graphics2D g2);
+    Rectangle getBounds();
+    ETools getShape();
 }
 
 public abstract class Shape implements Drawable {
@@ -37,6 +41,7 @@ public abstract class Shape implements Drawable {
         this.transparent = transparent;
     }
 
+    @Override
     public ETools getShape() {
         return this.shape;
     }
@@ -77,6 +82,7 @@ public abstract class Shape implements Drawable {
 
     protected abstract void draw(Graphics2D g2);
 
+    @Override
     public void Draw(Graphics2D g2) {
         g2.setColor(getColor());
         g2.setStroke(getStroke());
@@ -97,6 +103,16 @@ class LineShape extends Shape {
     @Override
     protected void draw(Graphics2D g2) {
         g2.drawLine(x, y, endX, endY);
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        int nx = Math.min(x, endX);
+        int ny = Math.min(y, endY);
+
+        int nw = Math.abs(x - endX);
+        int nh = Math.abs(y - endY);
+        return new Rectangle(nx, ny, nw, nh);
     }
 }
 
@@ -132,6 +148,10 @@ class RectangleShape extends Shape {
         this.height = height;
     }
 
+    @Override
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
 
     @Override
     protected void draw(Graphics2D g2) {
@@ -174,6 +194,11 @@ class EllipticalShape extends Shape {
         super(x, y, color, stroke, ETools.RECTANGLE, fillColor, transparent);
         this.width = width;
         this.height = height;
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
     }
 
     @Override
@@ -223,6 +248,16 @@ class PentagonShape extends Shape {
                 y + (int) (((Math.sqrt(3) - 0.9) / 2) * y2)
         };
 
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        int minX = Arrays.stream(pointsX).min().getAsInt();
+        int minY = Arrays.stream(pointsY).min().getAsInt();
+        int maxX = Arrays.stream(pointsX).max().getAsInt();
+        int maxY = Arrays.stream(pointsY).max().getAsInt();
+
+        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
     }
 
 
@@ -278,6 +313,16 @@ class HexagonShape extends Shape {
     }
 
     @Override
+    public Rectangle getBounds() {
+        int minX = Arrays.stream(pointsX).min().getAsInt();
+        int minY = Arrays.stream(pointsY).min().getAsInt();
+        int maxX = Arrays.stream(pointsX).max().getAsInt();
+        int maxY = Arrays.stream(pointsY).max().getAsInt();
+
+        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    @Override
     protected void draw(Graphics2D g2) {
         g2.drawPolygon(pointsX, pointsY, 6);
         if (!transparent) {
@@ -322,6 +367,16 @@ class TriangleShape extends Shape {
     }
 
     @Override
+    public Rectangle getBounds() {
+        int minX = Arrays.stream(pointsX).min().getAsInt();
+        int minY = Arrays.stream(pointsY).min().getAsInt();
+        int maxX = Arrays.stream(pointsX).max().getAsInt();
+        int maxY = Arrays.stream(pointsY).max().getAsInt();
+
+        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    @Override
     protected void draw(Graphics2D g2) {
         g2.drawPolygon(pointsX, pointsY, 3);
         if (!transparent) {
@@ -348,16 +403,41 @@ class TextShape extends Shape {
         g2.setFont(font);
         g2.drawString(message, x, y);
     }
+
+    @Override
+    public Rectangle getBounds() {
+        // Todo: 此处增加 text 的实现
+        return new Rectangle(x, y, 0, 0);
+    }
 }
 
 class Pencil implements Drawable {
     private ArrayList<LineShape> lines = new ArrayList<>();
 
     @Override
+    public ETools getShape() {
+        return ETools.PENCIL;
+    }
+
+    @Override
     public void Draw(Graphics2D g2) {
         for (LineShape line : lines) {
             line.Draw(g2);
         }
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        Rectangle bounds = null;
+
+        for (LineShape line : lines) {
+            if (bounds == null) {
+                bounds = line.getBounds();
+            } else {
+                bounds = bounds.union(line.getBounds());
+            }
+        }
+        return bounds;
     }
 
     public void addLine(LineShape line) {
@@ -393,6 +473,21 @@ class Polygon implements Drawable {
 
         this.color = color;
         this.stroke = stroke;
+    }
+
+    @Override
+    public ETools getShape() {
+        return ETools.POLYGON;
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        int minX = Collections.min(pointsX);
+        int minY = Collections.min(pointsY);
+        int maxX = Collections.max(pointsX);
+        int maxY = Collections.max(pointsY);
+
+        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
     }
 
     @Override
@@ -442,6 +537,34 @@ class Polygon implements Drawable {
         previewPointX = x;
         previewPointY = y;
     }
+}
 
+class Selected implements Drawable {
+    private ArrayList<Drawable> shapes = new ArrayList<>();
+    private RectangleShape bounds = null;
 
+    @Override
+    public ETools getShape() {
+        return ETools.SELECT;
+    }
+
+    public Selected(RectangleShape rectangleShape, ArrayList<Drawable> graphics) {
+        this.bounds = rectangleShape;
+        Rectangle b = rectangleShape.getBounds();
+        for (Drawable drawable : graphics) {
+            if (b.contains(drawable.getBounds())) {
+                shapes.add(drawable);
+            }
+        }
+    }
+
+    @Override
+    public void Draw(Graphics2D g2) {
+        bounds.Draw(g2);
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return bounds.getBounds();
+    }
 }
