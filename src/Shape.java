@@ -8,6 +8,7 @@ interface Drawable {
     void Draw(Graphics2D g2);
     Rectangle getBounds();
     ETools getShape();
+    void move(int dx, int dy);
 }
 
 public abstract class Shape implements Drawable {
@@ -101,6 +102,14 @@ class LineShape extends Shape {
     }
 
     @Override
+    public void move(int dx, int dy) {
+        x += dx;
+        y += dy;
+        endX += dx;
+        endY += dy;
+    }
+
+    @Override
     protected void draw(Graphics2D g2) {
         g2.drawLine(x, y, endX, endY);
     }
@@ -162,6 +171,12 @@ class RectangleShape extends Shape {
             g2.fillRect(x, y, width, height);
         }
     }
+
+    @Override
+    public void move(int dx, int dy) {
+        x += dx;
+        y += dy;
+    }
 }
 
 class EllipticalShape extends Shape {
@@ -209,6 +224,12 @@ class EllipticalShape extends Shape {
             g2.setColor(getFillColor());
             g2.fillOval(x, y, width, height);
         }
+    }
+
+    @Override
+    public void move(int dx, int dy) {
+        x += dx;
+        y += dy;
     }
 }
 
@@ -267,6 +288,17 @@ class PentagonShape extends Shape {
         if (!transparent) {
             g2.setColor(getFillColor());
             g2.fillPolygon(pointsX, pointsY, 5);
+        }
+    }
+
+    @Override
+    public void move(int dx, int dy) {
+        for (int i = 0; i < pointsX.length; i++) {
+            pointsX[i] += dx;
+        }
+
+        for (int i = 0; i < pointsY.length; i++) {
+            pointsY[i] += dy;
         }
     }
 }
@@ -330,6 +362,17 @@ class HexagonShape extends Shape {
             g2.fillPolygon(pointsX, pointsY, 6);
         }
     }
+
+    @Override
+    public void move(int dx, int dy) {
+        for (int i = 0; i < pointsX.length; i++) {
+            pointsX[i] += dx;
+        }
+
+        for (int i = 0; i < pointsY.length; i++) {
+            pointsY[i] += dy;
+        }
+    }
 }
 
 class TriangleShape extends Shape {
@@ -384,6 +427,17 @@ class TriangleShape extends Shape {
             g2.fillPolygon(pointsX, pointsY, 3);
         }
     }
+
+    @Override
+    public void move(int dx, int dy) {
+        for (int i = 0; i < pointsX.length; i++) {
+            pointsX[i] += dx;
+        }
+
+        for (int i = 0; i < pointsY.length; i++) {
+            pointsY[i] += dy;
+        }
+    }
 }
 
 class TextShape extends Shape {
@@ -408,6 +462,12 @@ class TextShape extends Shape {
     public Rectangle getBounds() {
         // Todo: 此处增加 text 的实现
         return new Rectangle(x, y, 0, 0);
+    }
+
+    @Override
+    public void move(int dx, int dy) {
+        x += dx;
+        y += dy;
     }
 }
 
@@ -454,6 +514,13 @@ class Pencil implements Drawable {
 
     public int getLines() {
         return lines.size();
+    }
+
+    @Override
+    public void move(int dx, int dy) {
+        for (LineShape line : lines) {
+            line.move(dx, dy);
+        }
     }
 }
 
@@ -537,11 +604,19 @@ class Polygon implements Drawable {
         previewPointX = x;
         previewPointY = y;
     }
+
+    @Override
+    public void move(int dx, int dy) {
+        pointsX.replaceAll(integer -> integer + dx);
+
+        pointsY.replaceAll(integer -> integer + dy);
+    }
 }
 
 class Selected implements Drawable {
     private ArrayList<Drawable> shapes = new ArrayList<>();
     private RectangleShape bounds = null;
+    private boolean isMoving = false;
 
     @Override
     public ETools getShape() {
@@ -566,5 +641,24 @@ class Selected implements Drawable {
     @Override
     public Rectangle getBounds() {
         return bounds.getBounds();
+    }
+
+    @Override
+    public void move(int dx, int dy) {
+        bounds.move(dx, dy);
+        for (Drawable drawable : shapes) {
+            drawable.move(dx, dy);
+        }
+    }
+
+    public void setMoving(boolean moving) {
+        isMoving = moving;
+    }
+    public boolean isMoving() {
+        return isMoving;
+    }
+
+    public int getSelectedSize() {
+        return shapes.size();
     }
 }

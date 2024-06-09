@@ -263,6 +263,8 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
             }
             repaint();
 
+        } else if (activeTool == ETools.SELECT) {
+            currentState = null;
         }
     }
 
@@ -273,6 +275,18 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         switch (activeTool) {
             case PENCIL:
                 currentState = new Pencil();
+                break;
+            case SELECT:
+                if (currentState == null || currentState.getShape() != ETools.SELECT) {
+                    return;
+                }
+                Rectangle bounds = currentState.getBounds();
+                if (x1>= bounds.x && x1 < bounds.x + bounds.width && y1 >= bounds.y && y1 < bounds.y + bounds.height) {
+                    Selected s = (Selected) currentState;
+                    s.setMoving(true);
+                }
+
+
                 break;
         }
     }
@@ -291,8 +305,19 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         } else if (activeTool == ETools.BUCKET) {
             floodFill(new Point2D.Double(x1, y1), currentColor);
         } else if (activeTool == ETools.SELECT) {
-            Selected selected = new Selected((RectangleShape)currentState, graphics);
-            currentState = selected;
+            if (currentState != null) {
+                if (currentState.getShape() == ETools.SELECT) {
+                    Selected s = (Selected) currentState;
+                    s.setMoving(false);
+                } else {
+                    Selected selected = new Selected((RectangleShape)currentState, graphics);
+                    currentState = selected;
+                    if (selected.getSelectedSize() == 0) {
+                        currentState = null;
+                    }
+                }
+            }
+
         }
         if (dragged) {
             grouped++;
@@ -369,6 +394,16 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 StartUp.mainWindow.getDrawPanel().repaint();
                 break;
             case SELECT:
+                if (currentState != null && currentState.getShape() == ETools.SELECT) {
+                    Selected s = (Selected) currentState;
+                    if (s.isMoving()) {
+                        s.move(x2 - x1, y2 - y1);
+                        x1 = x2;
+                        y1 = y2;
+                        StartUp.mainWindow.getDrawPanel().repaint();
+                        return;
+                    }
+                }
                 RectangleShape selectShape = null;
                 float[] dashPattern = {10, 10};  // 10 pixel line, 10 pixel space
                 BasicStroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0);
