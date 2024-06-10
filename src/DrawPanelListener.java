@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -73,7 +71,23 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         this.removed = new Stack<Drawable>();
         this.grouped = 1;
         this.transparent = true;
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            if (currentState == null || activeTool != ETools.SELECT) {
+                return;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
+                Selected s = (Selected) currentState;
+                s.delete(graphics);
+                currentState = null;
+                repaint();
+            }
+            }
+        });
     }
+
 
     public void changeDrawPanelSize(int width, int height) {
         graphics.clear();
@@ -293,12 +307,22 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                     return;
                 }
                 Rectangle bounds = currentState.getBounds();
-                if (x1>= bounds.x && x1 < bounds.x + bounds.width && y1 >= bounds.y && y1 < bounds.y + bounds.height) {
-                    Selected s = (Selected) currentState;
+                Selected s = (Selected) currentState;
+
+                int tolerance = 1;
+                if ( s.getBounds().getMaxX() - e.getX() <= 10 && s.getBounds().getMaxY() - e.getY() <= 10) {
+                    s.setDirection(Direction.RIGHT);
+                } else if (Math.abs(x1 - bounds.x) <= tolerance && y1 >= bounds.y && y1 <= bounds.y + bounds.height) {
+                    s.setDirection(Direction.LEFT);
+                } else if (Math.abs(x1 - (bounds.x + bounds.width)) <= tolerance && y1 >= bounds.y && y1 <= bounds.y + bounds.height) {
+                    s.setDirection(Direction.RIGHT);
+                } else if (Math.abs(y1 - bounds.y) <= tolerance && x1 >= bounds.x && x1 <= bounds.x + bounds.width) {
+                    s.setDirection(Direction.UP);
+                } else if (Math.abs(y1 - (bounds.y + bounds.height)) <= tolerance && x1 >= bounds.x && x1 <= bounds.x + bounds.width) {
+                    s.setDirection(Direction.DOWN);
+                } else if (x1 >= bounds.x && x1 < bounds.x + bounds.width && y1 >= bounds.y && y1 < bounds.y + bounds.height) {
                     s.setMoving(true);
                 }
-
-
                 break;
         }
     }
@@ -321,8 +345,9 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 if (currentState.getShape() == ETools.SELECT) {
                     Selected s = (Selected) currentState;
                     s.setMoving(false);
+                    s.setDirection(null);
                 } else {
-                    Selected selected = new Selected((RectangleShape)currentState, graphics);
+                    Selected selected = new Selected((RectangleShape) currentState, graphics);
                     currentState = selected;
                     if (selected.getSelectedSize() == 0) {
                         currentState = null;
@@ -410,6 +435,26 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                     Selected s = (Selected) currentState;
                     if (s.isMoving()) {
                         s.move(x2 - x1, y2 - y1);
+                        x1 = x2;
+                        y1 = y2;
+                        StartUp.mainWindow.getDrawPanel().repaint();
+                        return;
+                    } else if (s.getDirection() != null) {
+                        switch (s.getDirection()) {
+                            case LEFT:
+                                s.scaleX(true, x1 - x2);
+                                break;
+                            case RIGHT:
+                                s.scale(x2, y2, 0, 0, 0, 0);
+//                                s.scaleX(false, x2 - x1);
+                                break;
+                            case UP:
+                                s.scaleY(true, y1 - y2);
+                                break;
+                            case DOWN:
+                                s.scaleY(false, y2 - y1);
+                                break;
+                        }
                         x1 = x2;
                         y1 = y2;
                         StartUp.mainWindow.getDrawPanel().repaint();

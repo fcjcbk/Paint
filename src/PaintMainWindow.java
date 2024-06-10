@@ -4,6 +4,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -203,6 +204,21 @@ public class PaintMainWindow extends JFrame implements ActionListener {
                 StartUp.mainWindow.getDrawPanel().setThickness((int) sizeSpinner.getValue());
             }
         });
+
+//        paintMainPanel.addKeyListener(new KeyAdapter() {
+//            @Override
+//            public void keyTyped(KeyEvent e) {
+//                if (currentState == null || activeTool != ETools.SELECT) {
+//                    return;
+//                }
+//                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
+//                    Selected s = (Selected) currentState;
+//                    s.delete(graphics);
+//                    currentState = null;
+//                    repaint();
+//                }
+//            }
+//        });
     }
 
     public DrawPanelListener getDrawPanel() {

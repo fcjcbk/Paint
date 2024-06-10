@@ -1,4 +1,6 @@
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,7 +11,8 @@ interface Drawable {
     Rectangle getBounds();
     ETools getShape();
     void move(int dx, int dy);
-    void scale(double factor);
+    void scaleX(boolean isLeft, int dx);
+    void scaleY(boolean isTop, int dy);
     void setStroke(BasicStroke stroke);
     void setColor(Color color);
 }
@@ -138,9 +141,51 @@ class LineShape extends Shape {
     }
     
     @Override
-    public void scale(double factor) {
-        endX = x + (int)((endX - x) * factor);
-        endY = y + (int)((endY - y) * factor);
+    public void scaleX(boolean isLeft, int dx) {
+        Path2D.Double path = new Path2D.Double();
+        path.moveTo(x, y);
+        path.lineTo(endX, endY);
+    
+        double factor = isLeft ? 1 : -1;
+        int width = (int) path.getBounds2D().getWidth();
+        factor *= (double) (width + dx) / width;
+    
+        AffineTransform at = new AffineTransform();
+        at.scale(factor, 1.0);
+    
+        Shape transformedShape = at.createTransformedShape(path);
+        PathIterator iterator = transformedShape.getPathIterator(null);
+        double[] coords = new double[6];
+        iterator.currentSegment(coords);
+        x = (int) coords[0];
+        y = (int) coords[1];
+        iterator.next();
+        iterator.currentSegment(coords);
+        endX = (int) coords[0];
+        endY = (int) coords[1];
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        Line2D line2D = new Line2D.Double(x, y, endX, endY);
+        double factor = isTop ? 1 : -1;
+        int height = (int) line2D.getBounds2D().getHeight();
+        factor *= (double) (height + dy) / height;
+
+        // 创建一个 AffineTransform 对象
+        AffineTransform at = new AffineTransform();
+
+        // 设置水平拉伸，拉伸因子为2
+        at.scale(1.0, factor);
+
+        // 对直线进行拉伸
+        line2D = (Line2D) at.createTransformedShape(line2D);
+
+        x = (int)line2D.getX1();
+        y =  (int)line2D.getY1();
+
+        endX = (int)line2D.getX2();
+        endY = (int)line2D.getY2();
     }
 }
 
@@ -197,10 +242,27 @@ class RectangleShape extends Shape {
         y += dy;
     }
 
+//    @Override
+//    public void scale(double factor) {
+//        width = (int)(width * factor);
+//        height = (int)(height * factor);
+//    }
+
     @Override
-    public void scale(double factor) {
-        width = (int)(width * factor);
-        height = (int)(height * factor);
+    public void scaleX(boolean isLeft, int dx) {
+        width += dx;
+
+        if (isLeft) {
+            x = x - dx;
+        }
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        height += dy;
+        if (isTop) {
+            y -= dy;
+        }
     }
 }
 
@@ -257,10 +319,27 @@ class EllipticalShape extends Shape {
         y += dy;
     }
 
+//    @Override
+//    public void scale(double factor) {
+//        width = (int)(width * factor);
+//        height = (int)(height * factor);
+//    }
+
     @Override
-    public void scale(double factor) {
-        width = (int)(width * factor);
-        height = (int)(height * factor);
+    public void scaleX(boolean isLeft, int dx) {
+        width += dx;
+
+        if (isLeft) {
+            x = x - dx;
+        }
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        height += dy;
+        if (isTop) {
+            y -= dy;
+        }
     }
 }
 
@@ -333,25 +412,61 @@ class PentagonShape extends Shape {
         }
     }
 
+//    @Override
+//    public void scale(double factor) {
+//        int centerX = 0;
+//        int centerY = 0;
+//
+//        for (int i = 0; i < pointsX.length; i++) {
+//            centerX += pointsX[i];
+//            centerY += pointsY[i];
+//        }
+//
+//        centerX /= pointsX.length;
+//        centerY /= pointsY.length;
+//
+//        for (int i = 0; i < pointsX.length; i++) {
+//            int dx = pointsX[i] - centerX;
+//            int dy = pointsY[i] - centerY;
+//            pointsX[i] = centerX + (int)(dx * factor);
+//            pointsY[i] = centerY + (int)(dy * factor);
+//        }
+//    }
+
     @Override
-    public void scale(double factor) {
+    public void scaleX(boolean isLeft, int dx) {
         int centerX = 0;
-        int centerY = 0;
 
         for (int i = 0; i < pointsX.length; i++) {
             centerX += pointsX[i];
-            centerY += pointsY[i];
         }
 
         centerX /= pointsX.length;
-        centerY /= pointsY.length;
 
         for (int i = 0; i < pointsX.length; i++) {
-            int dx = pointsX[i] - centerX;
-            int dy = pointsY[i] - centerY;
-            pointsX[i] = centerX + (int)(dx * factor);
-            pointsY[i] = centerY + (int)(dy * factor);
+            if (isLeft && pointsX[i] < centerX || !isLeft && pointsX[i] > centerX) {
+                pointsX[i] = centerX + dx;
+            }
         }
+
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        int centerY = 0;
+
+        for (int i = 0; i < pointsY.length; i++) {
+            centerY += pointsY[i];
+        }
+
+        centerY /= pointsY.length;
+
+        for (int i = 0; i < pointsY.length; i++) {
+            if (isTop && pointsY[i] < centerY || !isTop && pointsY[i] > centerY) {
+                pointsY[i] = centerY + dy;
+            }
+        }
+        
     }
 }
 
@@ -427,24 +542,39 @@ class HexagonShape extends Shape {
     }
 
     @Override
-    public void scale(double factor) {
+    public void scaleX(boolean isLeft, int dx) {
         int centerX = 0;
-        int centerY = 0;
 
         for (int i = 0; i < pointsX.length; i++) {
             centerX += pointsX[i];
-            centerY += pointsY[i];
         }
 
         centerX /= pointsX.length;
-        centerY /= pointsY.length;
 
         for (int i = 0; i < pointsX.length; i++) {
-            int dx = pointsX[i] - centerX;
-            int dy = pointsY[i] - centerY;
-            pointsX[i] = centerX + (int)(dx * factor);
-            pointsY[i] = centerY + (int)(dy * factor);
+            if (isLeft && pointsX[i] < centerX || !isLeft && pointsX[i] > centerX) {
+                pointsX[i] = centerX + dx;
+            }
         }
+
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        int centerY = 0;
+
+        for (int i = 0; i < pointsY.length; i++) {
+            centerY += pointsY[i];
+        }
+
+        centerY /= pointsY.length;
+
+        for (int i = 0; i < pointsY.length; i++) {
+            if (isTop && pointsY[i] < centerY || !isTop && pointsY[i] > centerY) {
+                pointsY[i] = centerY + dy;
+            }
+        }
+
     }
 }
 
@@ -513,24 +643,39 @@ class TriangleShape extends Shape {
     }
 
     @Override
-    public void scale(double factor) {
+    public void scaleX(boolean isLeft, int dx) {
         int centerX = 0;
-        int centerY = 0;
 
         for (int i = 0; i < pointsX.length; i++) {
             centerX += pointsX[i];
-            centerY += pointsY[i];
         }
 
         centerX /= pointsX.length;
-        centerY /= pointsY.length;
 
         for (int i = 0; i < pointsX.length; i++) {
-            int dx = pointsX[i] - centerX;
-            int dy = pointsY[i] - centerY;
-            pointsX[i] = centerX + (int)(dx * factor);
-            pointsY[i] = centerY + (int)(dy * factor);
+            if (isLeft && pointsX[i] < centerX || !isLeft && pointsX[i] > centerX) {
+                pointsX[i] = centerX + dx;
+            }
         }
+
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        int centerY = 0;
+
+        for (int i = 0; i < pointsY.length; i++) {
+            centerY += pointsY[i];
+        }
+
+        centerY /= pointsY.length;
+
+        for (int i = 0; i < pointsY.length; i++) {
+            if (isTop && pointsY[i] < centerY || !isTop && pointsY[i] > centerY) {
+                pointsY[i] = centerY + dy;
+            }
+        }
+
     }
 }
 
@@ -564,8 +709,14 @@ class TextShape extends Shape {
         y += dy;
     }
 
+
     @Override
-    public void scale(double factor) {
+    public void scaleX(boolean isLeft, int dx) {
+
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
 
     }
 }
@@ -623,10 +774,19 @@ class Pencil implements Drawable {
     }
 
     @Override
-    public void scale(double factor) {
+    public void scaleX(boolean isLeft, int dx) {
         for (LineShape line : lines) {
-            line.scale(factor);
+            line.scaleX(isLeft, dx);
         }
+
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        for (LineShape line : lines) {
+            line.scaleY(isTop, dy);
+        }
+
     }
 
     @Override
@@ -744,15 +904,47 @@ class Polygon implements Drawable {
     }
 
     @Override
-    public void scale(double factor) {
+    public void scaleX(boolean isLeft, int dx) {
+        int centerX = 0;
 
+        for (int i = 0; i < pointsX.size(); i++) {
+            centerX += pointsX.get(i);
+        }
+
+        centerX /= pointsX.size();
+
+        for (int i = 0; i < pointsX.size(); i++) {
+            if (isLeft && pointsX.get(i) < centerX || !isLeft && pointsX.get(i) > centerX) {
+                pointsX.set(i, centerX + dx);
+            }
+        }
     }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        int centerY = 0;
+
+        for (int i = 0; i < pointsY.size(); i++) {
+            centerY += pointsY.get(i);
+        }
+
+        centerY /= pointsY.size();
+
+        for (int i = 0; i < pointsY.size(); i++) {
+            if (isTop && pointsY.get(i) < centerY || !isTop && pointsY.get(i) > centerY) {
+                pointsY.set(i, centerY + dy);
+            }
+        }
+    }
+
+
 }
 
 class Selected implements Drawable {
     private ArrayList<Drawable> shapes = new ArrayList<>();
     private RectangleShape bounds = null;
     private boolean isMoving = false;
+    private Direction direction = null;
 
     @Override
     public ETools getShape() {
@@ -794,15 +986,32 @@ class Selected implements Drawable {
         return isMoving;
     }
 
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
     public int getSelectedSize() {
         return shapes.size();
     }
 
     @Override
-    public void scale(double factor) {
+    public void scaleX(boolean isLeft, int dx) {
         for (Drawable d : shapes) {
-            d.scale(factor);
+            d.scaleX(isLeft, dx);
         }
+        bounds.scaleX(isLeft, dx);
+    }
+
+    @Override
+    public void scaleY(boolean isTop, int dy) {
+        for (Drawable d : shapes) {
+            d.scaleY(isTop, dy);
+        }
+        bounds.scaleY(isTop, dy);
     }
 
     @Override
@@ -818,4 +1027,34 @@ class Selected implements Drawable {
             d.setColor(color);
         }
     }
+
+    public void delete(ArrayList<Drawable> graphics) {
+        for (Drawable d : graphics) {
+            if (shapes.contains(d)) {
+                graphics.remove(d);
+            }
+        }
+    }
+
+    public int getX() {
+        return bounds.getX();
+    }
+
+    public int getY() {
+        return bounds.getY();
+    }
+
+    public int getHeight() {
+        return bounds.getHeight();
+    }
+
+    public int getWidth() {
+        return bounds.getWidth();
+    }
+}
+enum Direction {
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN
 }
