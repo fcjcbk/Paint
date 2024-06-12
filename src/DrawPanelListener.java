@@ -75,15 +75,15 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
-            if (currentState == null || activeTool != ETools.SELECT) {
-                return;
-            }
-            if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
-                Selected s = (Selected) currentState;
-                s.delete(graphics);
-                currentState = null;
-                repaint();
-            }
+                if (currentState == null || activeTool != ETools.SELECT) {
+                    return;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    Selected s = (Selected) currentState;
+                    s.delete(graphics);
+                    currentState = null;
+                    repaint();
+                }
             }
         });
     }
@@ -310,7 +310,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 Selected s = (Selected) currentState;
 
                 int tolerance = 1;
-                if ( s.getBounds().getMaxX() - e.getX() <= 10 && s.getBounds().getMaxY() - e.getY() <= 10) {
+                if (s.getBounds().getMaxX() - e.getX() <= 10 && s.getBounds().getMaxY() - e.getY() <= 10) {
                     s.setDirection(Direction.RIGHT);
                 } else if (Math.abs(x1 - bounds.x) <= tolerance && y1 >= bounds.y && y1 <= bounds.y + bounds.height) {
                     s.setDirection(Direction.LEFT);
@@ -442,17 +442,19 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                     } else if (s.getDirection() != null) {
                         switch (s.getDirection()) {
                             case LEFT:
-                                s.scaleX(true, x1 - x2);
+                                s.scale(x2, y2, 0, 0, 0, 0, null);
                                 break;
                             case RIGHT:
-                                s.scale(x2, y2, 0, 0, 0, 0);
+                                s.scale(x2, y2, 0, 0, 0, 0, null);
 //                                s.scaleX(false, x2 - x1);
                                 break;
                             case UP:
-                                s.scaleY(true, y1 - y2);
+//                                s.scaleY(true, y1 - y2);
+                                s.scale(x2, y2, 0, 0, 0, 0, null);
                                 break;
                             case DOWN:
-                                s.scaleY(false, y2 - y1);
+                                s.scale(x2, y2, 0, 0, 0, 0, null);
+//                                s.scaleY(false, y2 - y1);
                                 break;
                         }
                         x1 = x2;

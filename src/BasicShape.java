@@ -9,14 +9,24 @@ import java.util.Collections;
 
 interface Drawable {
     void Draw(Graphics2D g2);
+
     Rectangle getBounds();
+
     ETools getShape();
+
     void move(int dx, int dy);
+
     void scaleX(boolean isLeft, int dx);
+
     void scaleY(boolean isTop, int dy);
+
     void setStroke(BasicStroke stroke);
+
     void setColor(Color color);
-    void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy);
+
+    void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable);
+
+    Drawable getClone();
 }
 
 public abstract class BasicShape implements Drawable {
@@ -143,12 +153,24 @@ class LineShape extends BasicShape {
     }
 
 
+    public LineShape(LineShape rhs) {
+        super(rhs.x, rhs.y, rhs.color, rhs.stroke, rhs.shape);
+        this.endX = rhs.endX;
+        this.endY = rhs.endY;
+    }
+
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
-        x = (int)((x - ox) * scaleX + rectangleX);
-        y = (int)((y - oy) * scaleY + rectangleY);
-        endX = (int)((endX - ox) * scaleX + rectangleX);
-        endY = (int)((endY - oy) * scaleY + rectangleY);
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+        LineShape originalLine = (LineShape) drawable;
+        x = (int) ((originalLine.x - ox) * scaleX + rectangleX);
+        y = (int) ((originalLine.y - oy) * scaleY + rectangleY);
+        endX = (int) ((originalLine.endX - ox) * scaleX + rectangleX);
+        endY = (int) ((originalLine.endY - oy) * scaleY + rectangleY);
+    }
+
+    @Override
+    public Drawable getClone() {
+        return new LineShape(this);
     }
 
 
@@ -157,14 +179,14 @@ class LineShape extends BasicShape {
         Path2D.Double path = new Path2D.Double();
         path.moveTo(x, y);
         path.lineTo(endX, endY);
-    
+
         double factor = isLeft ? 1 : -1;
         int width = (int) path.getBounds2D().getWidth();
         factor *= (double) (width + dx) / width;
-    
+
         AffineTransform at = new AffineTransform();
         at.scale(factor, 1.0);
-    
+
         Shape transformedShape = at.createTransformedShape(path);
         PathIterator iterator = transformedShape.getPathIterator(null);
         double[] coords = new double[6];
@@ -228,17 +250,17 @@ class RectangleShape extends BasicShape {
         this.height = height;
     }
 
+    public RectangleShape(RectangleShape rhs) {
+        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.RECTANGLE);
+        this.width = rhs.width;
+        this.height = rhs.height;
+    }
+
 
     public RectangleShape(int x, int y, int width, int height, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
         super(x, y, color, stroke, ETools.RECTANGLE, fillColor, transparent);
         this.width = width;
         this.height = height;
-    }
-
-    public RectangleShape(RectangleShape rhs) {
-        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.RECTANGLE, rhs.fillColor, rhs.transparent);
-        this.width = rhs.width;
-        this.height = rhs.height;
     }
 
     @Override
@@ -286,11 +308,18 @@ class RectangleShape extends BasicShape {
     }
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
-        x = (int)((x - rectangleX) * scaleX + rectangleX);
-        y = (int)((y - rectangleY) * scaleY + rectangleY);
-//        endX = (int)((endX - rectangleX) * factor + rectangleX);
-//        endY = (int)((endY - rectangleY) * factor + rectangleY);
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+        RectangleShape original = (RectangleShape) drawable;
+        x = (int) ((original.x - ox) * scaleX + rectangleX);
+        y = (int) ((original.y - oy) * scaleY + rectangleY);
+
+        width = (int) (original.width * scaleX);
+        height = (int) (original.height * scaleY);
+    }
+
+    @Override
+    public Drawable getClone() {
+        return new RectangleShape(this);
     }
 }
 
@@ -324,6 +353,12 @@ class EllipticalShape extends BasicShape {
         super(x, y, color, stroke, ETools.RECTANGLE, fillColor, transparent);
         this.width = width;
         this.height = height;
+    }
+
+    public EllipticalShape(EllipticalShape rhs) {
+        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.RECTANGLE);
+        this.width = rhs.width;
+        this.height = rhs.height;
     }
 
     @Override
@@ -371,11 +406,18 @@ class EllipticalShape extends BasicShape {
     }
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
-        x = (int)((x - rectangleX) * scaleX + rectangleX);
-        y = (int)((y - rectangleY) * scaleY + rectangleY);
-//        endX = (int)((endX - rectangleX) * factor + rectangleX);
-//        endY = (int)((endY - rectangleY) * factor + rectangleY);
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+        EllipticalShape original = (EllipticalShape) drawable;
+        x = (int) ((original.x - ox) * scaleX + rectangleX);
+        y = (int) ((original.y - oy) * scaleY + rectangleY);
+
+        width = (int) (original.width * scaleX);
+        height = (int) (original.height * scaleY);
+    }
+
+    @Override
+    public Drawable getClone() {
+        return new EllipticalShape(this);
     }
 }
 
@@ -396,6 +438,13 @@ class PentagonShape extends BasicShape {
         super(x1, y1, color, stroke, ETools.PENTAGON, fillColor, transparent);
         this.x2 = x2;
         this.y2 = y2;
+        initPoints();
+    }
+
+    public PentagonShape(PentagonShape rhs) {
+        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.PENTAGON);
+        this.x2 = rhs.x2;
+        this.y2 = rhs.y2;
         initPoints();
     }
 
@@ -450,35 +499,21 @@ class PentagonShape extends BasicShape {
 
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+        PentagonShape original = (PentagonShape) drawable;
+
+        x = (int) ((original.x - ox) * scaleX + rectangleX);
+        y = (int) ((original.y - oy) * scaleY + rectangleY);
+
         for (int i = 0; i < pointsX.length; i++) {
-            pointsX[i] = (int)((pointsX[i] - rectangleX) * scaleX + rectangleX);
+            pointsX[i] = (int) ((original.pointsX[i] - ox) * scaleX + rectangleX);
         }
 
         for (int i = 0; i < pointsY.length; i++) {
-            pointsY[i] = (int)((pointsY[i] - rectangleY) * scaleY + rectangleY);
+            pointsY[i] = (int) ((original.pointsY[i] - oy) * scaleY + rectangleY);
         }
     }
-//    @Override
-//    public void scale(double factor) {
-//        int centerX = 0;
-//        int centerY = 0;
-//
-//        for (int i = 0; i < pointsX.length; i++) {
-//            centerX += pointsX[i];
-//            centerY += pointsY[i];
-//        }
-//
-//        centerX /= pointsX.length;
-//        centerY /= pointsY.length;
-//
-//        for (int i = 0; i < pointsX.length; i++) {
-//            int dx = pointsX[i] - centerX;
-//            int dy = pointsY[i] - centerY;
-//            pointsX[i] = centerX + (int)(dx * factor);
-//            pointsY[i] = centerY + (int)(dy * factor);
-//        }
-//    }
+
 
     @Override
     public void scaleX(boolean isLeft, int dx) {
@@ -513,7 +548,12 @@ class PentagonShape extends BasicShape {
                 pointsY[i] = centerY + dy;
             }
         }
-        
+
+    }
+
+    @Override
+    public Drawable getClone() {
+        return new PentagonShape(this);
     }
 }
 
@@ -538,6 +578,12 @@ class HexagonShape extends BasicShape {
         initPoints();
     }
 
+    public HexagonShape(HexagonShape rhs) {
+        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.PENTAGON);
+        this.x2 = rhs.x2;
+        this.y2 = rhs.y2;
+        initPoints();
+    }
 
     private void initPoints() {
         pointsX = new int[]{
@@ -625,14 +671,30 @@ class HexagonShape extends BasicShape {
     }
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+        HexagonShape original = (HexagonShape) drawable;
+
+        x = (int) ((original.x - ox) * scaleX + rectangleX);
+        y = (int) ((original.y - oy) * scaleY + rectangleY);
+
         for (int i = 0; i < pointsX.length; i++) {
-            pointsX[i] = (int)((pointsX[i] - ox) * scaleX + rectangleX);
+            pointsX[i] = (int) ((original.pointsX[i] - ox) * scaleX + rectangleX);
         }
 
         for (int i = 0; i < pointsY.length; i++) {
-            pointsY[i] = (int)((pointsY[i] - oy) * scaleY + rectangleY);
+            pointsY[i] = (int) ((original.pointsY[i] - oy) * scaleY + rectangleY);
         }
+    }
+
+
+    @Override
+    public Drawable getClone() {
+        try {
+            return (Drawable) this.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 
@@ -654,6 +716,13 @@ class TriangleShape extends BasicShape {
         super(x1, y1, color, stroke, ETools.PENTAGON, fillColor, transparent);
         this.x2 = x2;
         this.y2 = y2;
+        initPoints();
+    }
+
+    public TriangleShape(TriangleShape rhs) {
+        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.PENTAGON);
+        this.x2 = rhs.x2;
+        this.y2 = rhs.y2;
         initPoints();
     }
 
@@ -737,14 +806,24 @@ class TriangleShape extends BasicShape {
     }
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+        TriangleShape original = (TriangleShape) drawable;
+
+        x = (int) ((original.x - ox) * scaleX + rectangleX);
+        y = (int) ((original.y - oy) * scaleY + rectangleY);
+
         for (int i = 0; i < pointsX.length; i++) {
-            pointsX[i] = (int)((pointsX[i] - ox) * scaleX + rectangleX);
+            pointsX[i] = (int) ((original.pointsX[i] - ox) * scaleX + rectangleX);
         }
 
         for (int i = 0; i < pointsY.length; i++) {
-            pointsY[i] = (int)((pointsY[i] - oy) * scaleY + rectangleY);
+            pointsY[i] = (int) ((original.pointsY[i] - oy) * scaleY + rectangleY);
         }
+    }
+
+    @Override
+    public Drawable getClone() {
+        return new TriangleShape(this);
     }
 }
 
@@ -790,12 +869,34 @@ class TextShape extends BasicShape {
     }
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+    }
+
+
+    @Override
+    public Drawable getClone() {
+        try {
+            return (Drawable) this.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 
 class Pencil implements Drawable {
     private ArrayList<LineShape> lines = new ArrayList<>();
+
+    public Pencil() {
+    }
+
+    public Pencil(Pencil pencil) {
+        lines = new ArrayList<>();
+        for (LineShape line : pencil.lines) {
+            lines.add((LineShape) line.getClone());
+        }
+
+    }
 
     @Override
     public ETools getShape() {
@@ -851,7 +952,6 @@ class Pencil implements Drawable {
         for (LineShape line : lines) {
             line.scaleX(isLeft, dx);
         }
-
     }
 
     @Override
@@ -870,17 +970,24 @@ class Pencil implements Drawable {
     }
 
     @Override
-    public  void setColor(Color color) {
+    public void setColor(Color color) {
         for (LineShape l : lines) {
             l.setColor(color);
         }
     }
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
-        for (LineShape line : lines) {
-            line.scale(rectangleX, rectangleY, scaleX, scaleY, ox, oy);
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+        Pencil original = (Pencil) drawable;
+        for (int i = 0; i < lines.size(); i++) {
+            LineShape line = lines.get(i);
+            line.scale(rectangleX, rectangleY, scaleX, scaleY, ox, oy, original.lines.get(i));
         }
+    }
+
+    @Override
+    public Drawable getClone() {
+        return new Pencil(this);
     }
 }
 
@@ -903,6 +1010,19 @@ class Polygon implements Drawable {
         this.stroke = stroke;
     }
 
+    public Polygon(Polygon polygon) {
+        pointsX = new ArrayList<>();
+        pointsY = new ArrayList<>();
+
+        this.color = polygon.color;
+        this.stroke = polygon.stroke;
+
+        for (int i = 0; i < polygon.pointsX.size(); i++) {
+            pointsX.add(polygon.pointsX.get(i));
+            pointsY.add(polygon.pointsY.get(i));
+        }
+    }
+
     @Override
     public ETools getShape() {
         return ETools.POLYGON;
@@ -920,21 +1040,22 @@ class Polygon implements Drawable {
 
 
     @Override
-    public  void setStroke(BasicStroke stroke) {
+    public void setStroke(BasicStroke stroke) {
         this.stroke = stroke;
     }
 
     @Override
-    public  void setColor(Color color) {
+    public void setColor(Color color) {
         this.color = color;
     }
+
     @Override
     public void Draw(Graphics2D g2) {
         g2.setColor(color);
         g2.setStroke(stroke);
         if (isFinish) {
-            int []px = pointsX.stream().mapToInt(i -> i).toArray();
-            int []py = pointsY.stream().mapToInt(i -> i).toArray();
+            int[] px = pointsX.stream().mapToInt(i -> i).toArray();
+            int[] py = pointsY.stream().mapToInt(i -> i).toArray();
             g2.drawPolygon(px, py, pointsX.size());
             return;
         }
@@ -1018,16 +1139,23 @@ class Polygon implements Drawable {
     }
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
+        Polygon original = (Polygon) drawable;
+
         for (int i = 0; i < pointsX.size(); i++) {
-            pointsX.set(i, (int)((pointsX.get(i) - rectangleX) * scaleX + rectangleX));
+            pointsX.set(i, (int) ((original.pointsX.get(i) - ox) * scaleX + rectangleX));
         }
 
         for (int i = 0; i < pointsY.size(); i++) {
-            pointsY.set(i,  (int)((pointsY.get(i) - rectangleY) * scaleY + rectangleY));
+            pointsY.set(i, (int) ((original.pointsY.get(i) - oy) * scaleY + rectangleY));
         }
     }
 
+
+    @Override
+    public Drawable getClone() {
+        return new Polygon(this);
+    }
 }
 
 class Selected implements Drawable {
@@ -1053,7 +1181,11 @@ class Selected implements Drawable {
     }
 
     public Selected(Selected rhs) {
-        shapes = new ArrayList<>(rhs.shapes);
+        shapes = new ArrayList<>();
+        for (int i = 0; i < rhs.shapes.size(); i++) {
+            shapes.add(rhs.shapes.get(i).getClone());
+        }
+
         bounds = new RectangleShape(rhs.bounds);
         isMoving = rhs.isMoving;
         direction = rhs.direction;
@@ -1081,6 +1213,7 @@ class Selected implements Drawable {
     public void setMoving(boolean moving) {
         isMoving = moving;
     }
+
     public boolean isMoving() {
         return isMoving;
     }
@@ -1157,7 +1290,7 @@ class Selected implements Drawable {
     }
 
     @Override
-    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy) {
+    public void scale(int rectangleX, int rectangleY, double scaleX, double scaleY, int ox, int oy, Drawable drawable) {
         double newWidth = rectangleX - bounds.getX();
         double newHeight = rectangleY - bounds.getY();
 
@@ -1167,18 +1300,30 @@ class Selected implements Drawable {
 //        scaleX = newWidth / bounds.getWidth();
 //        scaleY = newHeight / bounds.getHeight();
 
-        bounds.setWidth((int)newWidth);
-        bounds.setHeight((int)newHeight);
+        bounds.setWidth((int) newWidth);
+        bounds.setHeight((int) newHeight);
 
-        for (Drawable d : shapes) {
-            d.scale(bounds.getX(), bounds.getY(), scaleX, scaleY, copy.getX(), copy.getY());
+        for (int i = 0; i < shapes.size(); i++) {
+            Drawable d = copy.shapes.get(i);
+            shapes.get(i).scale(bounds.getX(), bounds.getY(), scaleX, scaleY, copy.getX(), copy.getY(), d);
         }
     }
 
     public Selected getCopy() {
         return copy;
     }
+
+    @Override
+    public Drawable getClone() {
+        try {
+            return (Drawable) this.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
+
 enum Direction {
     LEFT,
     RIGHT,

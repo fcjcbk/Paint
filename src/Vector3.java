@@ -33,9 +33,8 @@ public class Vector3 {
         return "(" + x + ", " + y + ", " + z + ")";
     }
 
-    public Vector3 normalization()
-    {
-        return new Vector3(x / modulus, y /modulus, z / modulus);
+    public Vector3 normalization() {
+        return new Vector3(x / modulus, y / modulus, z / modulus);
     }
 
 }
