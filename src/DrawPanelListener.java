@@ -445,20 +445,20 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                                 s.scale(x2, y2, 0, 0, 0, 0, null);
                                 break;
                             case RIGHT:
-                                s.scale(x2, y2, 0, 0, 0, 0, null);
-//                                s.scaleX(false, x2 - x1);
+                                if (e.isShiftDown()) {
+                                    s.scale(x2, x2 - x1 + y1, 0, 0, 0, 0, null);
+
+                                } else {
+                                    s.scale(x2, y2, 0, 0, 0, 0, null);
+                                }
                                 break;
                             case UP:
-//                                s.scaleY(true, y1 - y2);
                                 s.scale(x2, y2, 0, 0, 0, 0, null);
                                 break;
                             case DOWN:
                                 s.scale(x2, y2, 0, 0, 0, 0, null);
-//                                s.scaleY(false, y2 - y1);
                                 break;
                         }
-                        x1 = x2;
-                        y1 = y2;
                         StartUp.mainWindow.getDrawPanel().repaint();
                         return;
                     }
