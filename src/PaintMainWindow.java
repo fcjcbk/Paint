@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class PaintMainWindow extends JFrame implements ActionListener {
@@ -65,6 +67,9 @@ public class PaintMainWindow extends JFrame implements ActionListener {
     private JMenuItem quash, recover;
     private DrawPanelListener drawPanelListener = new DrawPanelListener();
     private MenuItemActionListener menuItemActionListener = new MenuItemActionListener();
+
+    private Map<JButton, ETools> toolMap = new HashMap<>();
+    private Map<JButton, Color> colorMap = new HashMap<>();
 
     public PaintMainWindow() {
         super("画图");
@@ -204,21 +209,6 @@ public class PaintMainWindow extends JFrame implements ActionListener {
                 StartUp.mainWindow.getDrawPanel().setThickness((int) sizeSpinner.getValue());
             }
         });
-
-//        paintMainPanel.addKeyListener(new KeyAdapter() {
-//            @Override
-//            public void keyTyped(KeyEvent e) {
-//                if (currentState == null || activeTool != ETools.SELECT) {
-//                    return;
-//                }
-//                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
-//                    Selected s = (Selected) currentState;
-//                    s.delete(graphics);
-//                    currentState = null;
-//                    repaint();
-//                }
-//            }
-//        });
     }
 
     public DrawPanelListener getDrawPanel() {
@@ -334,6 +324,63 @@ public class PaintMainWindow extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
+        if (toolMap.containsKey(source)) {
+            ((DrawPanelListener) drawPanel).setTool(toolMap.get(source));
+        } else if (colorMap.containsKey(source)) {
+            setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
+            ((DrawPanelListener) drawPanel).setColor(colorMap.get(source));
+            setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
+        } else if (source == lastColorBtn) {
+            setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
+            ((DrawPanelListener) drawPanel).setColor(lastColorBtn.getBackground());
+            setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
+        } else if(source == nowColorBtn) {
+            setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
+            ((DrawPanelListener) drawPanel).setColor(nowColorBtn.getBackground());
+            setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
+        } else if (source == paletteBtn) {
+            showColorChooser();
+        } else if (source == fillBtn) {
+            StartUp.mainWindow.getDrawPanel().setTransparency(!fillBtn.isSelected());
+        } else if (source == selectBtn) {
+            ((DrawPanelListener) drawPanel).setTool(ETools.SELECT);
+        }
+    }
+
+    private void initMap() {
+        toolMap.put(pencilBtn, ETools.PENCIL);
+        toolMap.put(eraserBtn, ETools.ERASER);
+        toolMap.put(bucketBtn, ETools.BUCKET);
+        toolMap.put(strawBtn, ETools.STRAW);
+        toolMap.put(textBtn, ETools.TEXT);
+        toolMap.put(brushesBtn, ETools.PENCIL);
+        toolMap.put(lineBtn, ETools.LINE);
+        toolMap.put(arcBtn, ETools.POLYGON);
+        toolMap.put(ellipticalBtn, ETools.ELLIPTICAL);
+        toolMap.put(hexagonBtn, ETools.HEXAGON);
+        toolMap.put(pentagonBtn, ETools.PENTAGON);
+        toolMap.put(triangleBtn, ETools.TRIANGLE);
+        toolMap.put(rectangleBtn, ETools.RECTANGLE);
+
+        colorMap.put(blackBtn, SpecialColor.black);
+        colorMap.put(garyBtn, SpecialColor.gary);
+        colorMap.put(lightGaryBtn, SpecialColor.lightGary);
+        colorMap.put(darkRedBtn, SpecialColor.darkRed);
+        colorMap.put(pinkBtn, SpecialColor.pink);
+        colorMap.put(citrusColorBtn, SpecialColor.citrusColor);
+        colorMap.put(redBtn, SpecialColor.red);
+        colorMap.put(waxyYellowBtn, SpecialColor.waxyYellow);
+        colorMap.put(mistyColorBtn, SpecialColor.mistyColor);
+        colorMap.put(orangeBtn, SpecialColor.orange);
+        colorMap.put(lightGreenBtn, SpecialColor.lightGreen);
+        colorMap.put(blueBtn, SpecialColor.blue);
+        colorMap.put(lightYellowBtn, SpecialColor.lightYellow);
+        colorMap.put(ultramarineBtn, SpecialColor.ultramarine);
+        colorMap.put(lightPurpleBtn, SpecialColor.lightPurple);
+    }
+
+    public void actionPerformed1(ActionEvent e) {
         if (e.getSource() == paletteBtn) {
             showColorChooser();
         } else if (e.getSource() == pencilBtn) {
