@@ -64,7 +64,7 @@ public class PaintMainWindow extends JFrame implements ActionListener {
     private JMenu file, view, edit;
     private JMenuItem openFile, newFile, saveFile;
     private JMenuItem full, half;
-    private JMenuItem quash, recover;
+    private JMenuItem quash, recover, delete, copy, paste;
     private DrawPanelListener drawPanelListener = new DrawPanelListener();
     private MenuItemActionListener menuItemActionListener = new MenuItemActionListener();
 
@@ -130,14 +130,34 @@ public class PaintMainWindow extends JFrame implements ActionListener {
 
         quash = new JMenuItem("撤销", new ImageIcon("assets/quash (Icon).png"));
         recover = new JMenuItem("恢复", new ImageIcon("assets/recover (Icon).png"));
+        delete = new JMenuItem("删除", new ImageIcon("assets/quash (Icon).png"));
+        copy = new JMenuItem("复制", new ImageIcon("assets/paste (Icon).png"));
+        paste = new JMenuItem("粘贴", new ImageIcon("assets/paste (Icon).png"));
+
         quash.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
         recover.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+        delete.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0));
+        copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+        paste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+
         quash.addActionListener(menuItemActionListener);
         recover.addActionListener(menuItemActionListener);
+        delete.addActionListener(menuItemActionListener);
+        copy.addActionListener(menuItemActionListener);
+        delete.addActionListener(menuItemActionListener);
+        paste.addActionListener(menuItemActionListener);
+
         quash.setName("quash");
         recover.setName("recover");
+        delete.setName("delete");
+        copy.setName("copy");
+        paste.setName("paste");
+
         edit.add(quash);
         edit.add(recover);
+        edit.add(delete);
+        edit.add(copy);
+        edit.add(paste);
 
         mainMenu.add(file);
         mainMenu.add(view);
@@ -202,6 +222,8 @@ public class PaintMainWindow extends JFrame implements ActionListener {
 
         nowColorBtn.addActionListener(this);
         lastColorBtn.addActionListener(this);
+
+        initMap();
 
         sizeSpinner.addChangeListener(new ChangeListener() {
             @Override

@@ -10,6 +10,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
 
     public static boolean isInCanvas = false;
     private int x1, y1, x2, y2;
+    private int currentX, currentY;
     private boolean dragged = false;
     private Color currentColor;
     private Color lastColor;
@@ -17,6 +18,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     private int grouped;
     private BasicStroke stroke = new BasicStroke((float) 2);
     private ArrayList<Drawable> graphics;
+    private ArrayList<Drawable> copyBuffer;
     private Stack<Drawable> removed;
     private Drawable currentState;
     private BufferedImage canvas;
@@ -233,6 +235,38 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         pushGraphics(removed.pop());
         repaint();
     }
+
+    public void delete() {
+        if (currentState == null || activeTool != ETools.SELECT || currentState.getShape() != ETools.SELECT) {
+            return;
+        }
+        Selected s = (Selected) currentState;
+        s.delete(graphics);
+        currentState = null;
+        repaint();
+    }
+
+    public void copy() {
+        if (currentState == null || activeTool != ETools.SELECT || currentState.getShape() != ETools.SELECT) {
+            return;
+        }
+        Selected s = (Selected) currentState;
+
+        copyBuffer = s.getShapesCopy();
+    }
+
+    public void paste() {
+        if (copyBuffer == null) {
+            return;
+        }
+        for (Drawable d : copyBuffer) {
+            Drawable cloneD = d.getClone();
+            cloneD.move(currentX, currentY);
+            graphics.add(cloneD);
+
+        }
+    }
+
 
     public Color getCurrentColor() {
         return currentColor;
@@ -548,6 +582,8 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     @Override
     public void mouseMoved(MouseEvent e) {
         StartUp.mainWindow.setMousePosLabel(e.getX(), e.getY());
+        currentX = e.getX();
+        currentY = e.getY();
         if (activeTool == ETools.POLYGON && currentState != null) {
             Polygon p = (Polygon) currentState;
             p.setPreviewPoint(e.getX(), e.getY());

@@ -1315,12 +1315,15 @@ class Selected implements Drawable {
 
     @Override
     public Drawable getClone() {
-        try {
-            return (Drawable) this.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
         return null;
+    }
+
+    public ArrayList<Drawable> getShapesCopy() {
+        ArrayList<Drawable> shapesCopy = new ArrayList<>();
+        for (Drawable drawable : shapes) {
+            shapesCopy.add(drawable.getClone());
+        }
+        return shapesCopy;
     }
 }
 

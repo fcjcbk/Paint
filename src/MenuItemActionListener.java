@@ -45,36 +45,66 @@ public class MenuItemActionListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String name = ((JMenuItem) e.getSource()).getName();
-        if (name.equals("newFile")) {
-            StartUp.mainWindow.createNewDrawPanel();
-        } else if (name.equals("openFile")) {
-            JFileChooser fileChooser = new JFileChooser(new File("."));
-            fileChooser.setFileFilter(new FileNameExtensionFilter("图片", "jpg", "png"));
-            if (fileChooser.showOpenDialog(StartUp.mainWindow) == JFileChooser.APPROVE_OPTION) {
-                File file = fileChooser.getSelectedFile();
-                openFile(file);
-            }
+        switch (name) {
+            case "newFile":
+                StartUp.mainWindow.createNewDrawPanel();
+                break;
 
-        } else if (name.equals("saveFile")) {
-            JFileChooser fileChooser = new JFileChooser(new File("."));
-            fileChooser.setFileFilter(new FileNameExtensionFilter("图片", "jpg", "png"));
-            if (fileChooser.showSaveDialog(StartUp.mainWindow) == JFileChooser.APPROVE_OPTION) {
-                File file = new File(fileChooser.getSelectedFile() + ".png");
-                try {
-                    saveFile(file);
-                } catch (IOException ioE) {
-                    ioE.printStackTrace();
+            case "openFile":
+                JFileChooser fileChooserOpen = new JFileChooser(new File("."));
+                fileChooserOpen.setFileFilter(new FileNameExtensionFilter("图片", "jpg", "png"));
+                if (fileChooserOpen.showOpenDialog(StartUp.mainWindow) == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooserOpen.getSelectedFile();
+                    openFile(file);
                 }
-            }
-        } else if (name.equals("full")) {
-        } else if (name.equals("half")) {
+                break;
 
-        } else if (name.equals("quash")) {
-            StartUp.mainWindow.getDrawPanel().quash();
-        } else if (name.equals("recover")) {
-            StartUp.mainWindow.getDrawPanel().recover();
-        } else {
-            return;
+            case "saveFile":
+                JFileChooser fileChooserSave = new JFileChooser(new File("."));
+                fileChooserSave.setFileFilter(new FileNameExtensionFilter("图片", "jpg", "png"));
+                if (fileChooserSave.showSaveDialog(StartUp.mainWindow) == JFileChooser.APPROVE_OPTION) {
+                    File file = new File(fileChooserSave.getSelectedFile() + ".png");
+                    try {
+                        saveFile(file);
+                    } catch (IOException ioE) {
+                        ioE.printStackTrace();
+                    }
+                }
+                break;
+
+            case "full":
+                // Add implementation if needed
+                break;
+
+            case "half":
+                // Add implementation if needed
+                break;
+
+            case "quash":
+                StartUp.mainWindow.getDrawPanel().quash();
+                break;
+
+            case "recover":
+                StartUp.mainWindow.getDrawPanel().recover();
+                break;
+
+            case "delete":
+                System.out.println("delete");
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // Update Swing components here
+                        StartUp.mainWindow.getDrawPanel().delete();
+                    }
+                });
+                break;
+            case "copy":
+                StartUp.mainWindow.getDrawPanel().copy();
+                break;
+            case "paste":
+                StartUp.mainWindow.getDrawPanel().paste();
+                break;
+            default:
+                return;
         }
         System.out.println(e.toString());
     }
