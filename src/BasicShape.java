@@ -1266,12 +1266,15 @@ class Selected implements Drawable {
     }
 
     public void delete(ArrayList<Drawable> graphics) {
+        ArrayList<Drawable> toRemove = new ArrayList<>();
         for (Drawable d : graphics) {
             if (shapes.contains(d)) {
-                graphics.remove(d);
+                toRemove.add(d);
             }
         }
+        graphics.removeAll(toRemove);
     }
+
 
     public int getX() {
         return bounds.getX();

@@ -19,6 +19,8 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
     private BasicStroke stroke = new BasicStroke((float) 2);
     private ArrayList<Drawable> graphics;
     private ArrayList<Drawable> copyBuffer;
+    private int copyX, copyY;
+
     private Stack<Drawable> removed;
     private Drawable currentState;
     private BufferedImage canvas;
@@ -73,21 +75,6 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         this.removed = new Stack<Drawable>();
         this.grouped = 1;
         this.transparent = true;
-
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (currentState == null || activeTool != ETools.SELECT) {
-                    return;
-                }
-                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    Selected s = (Selected) currentState;
-                    s.delete(graphics);
-                    currentState = null;
-                    repaint();
-                }
-            }
-        });
     }
 
 
@@ -253,6 +240,8 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         Selected s = (Selected) currentState;
 
         copyBuffer = s.getShapesCopy();
+        copyX = s.getX() + s.getWidth() / 2;
+        copyY = s.getY() + s.getHeight() / 2;
     }
 
     public void paste() {
@@ -261,10 +250,12 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         }
         for (Drawable d : copyBuffer) {
             Drawable cloneD = d.getClone();
-            cloneD.move(currentX, currentY);
+            cloneD.move(currentX - copyX, currentY - copyY);
             graphics.add(cloneD);
 
         }
+        repaint();
+
     }
 
 
