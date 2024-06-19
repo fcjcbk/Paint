@@ -492,13 +492,15 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 float[] dashPattern = {10, 10};  // 10 pixel line, 10 pixel space
                 BasicStroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0);
                 if (x1 < x2 && y1 < y2) {
-                    selectShape = new RectangleShape(x1, y1, x2 - x1, y2 - y1, primary, dashedStroke, secondary, transparent);
+                    selectShape = new RectangleShape(x1, y1, x2 - x1, y2 - y1, Color.BLACK, dashedStroke, secondary, true);
                 } else if (x2 < x1 && y1 < y2) {
-                    selectShape = new RectangleShape(x2, y1, x1 - x2, y2 - y1, primary, dashedStroke, secondary, transparent);
+                    selectShape = new RectangleShape(x2, y1, x1 - x2, y2 - y1, Color.BLACK, dashedStroke, secondary, true);
                 } else if (x1 < x2 && y2 < y1) {
-                    selectShape = new RectangleShape(x1, y2, x2 - x1, y1 - y2, primary, dashedStroke, secondary, transparent);
+                    selectShape = new RectangleShape(x1, y2, x2 - x1, y1 - y2, Color.BLACK, dashedStroke, secondary, true);
                 } else if (x2 < x1 && y2 < y1) {
-                    selectShape = new RectangleShape(x2, y2, x1 - x2, y1 - y2, primary, dashedStroke, secondary, transparent);
+                    selectShape = new RectangleShape(x2, y2, x1 - x2, y1 - y2, Color.BLACK, dashedStroke, secondary, true);
+                } else  {
+                    break;
                 }
 
                 currentState = selectShape;
