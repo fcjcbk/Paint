@@ -90,11 +90,9 @@ public class MenuItemActionListener implements ActionListener {
 
             case "delete":
                 System.out.println("delete");
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
+                SwingUtilities.invokeLater(() -> {
                         // Update Swing components here
-                        StartUp.mainWindow.getDrawPanel().delete();
-                    }
+                    StartUp.mainWindow.getDrawPanel().delete();
                 });
                 break;
             case "copy":

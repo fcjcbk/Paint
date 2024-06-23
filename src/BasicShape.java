@@ -1264,13 +1264,7 @@ class Selected implements Drawable {
     }
 
     public void delete(ArrayList<Drawable> graphics) {
-        ArrayList<Drawable> toRemove = new ArrayList<>();
-        for (Drawable d : graphics) {
-            if (shapes.contains(d)) {
-                toRemove.add(d);
-            }
-        }
-        graphics.removeAll(toRemove);
+        graphics.removeIf(d -> shapes.contains(d));
     }
 
 
@@ -1297,9 +1291,6 @@ class Selected implements Drawable {
 
         scaleX = newWidth / copy.bounds.getWidth();
         scaleY = newHeight / copy.bounds.getHeight();
-
-//        scaleX = newWidth / bounds.getWidth();
-//        scaleY = newHeight / bounds.getHeight();
 
         bounds.setWidth((int) newWidth);
         bounds.setHeight((int) newHeight);

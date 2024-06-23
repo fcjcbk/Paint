@@ -6,33 +6,29 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Stack;
 
-public class DrawPanelListener extends JPanel implements MouseListener, MouseMotionListener {
+public class DrawEventHandler extends JPanel implements MouseListener, MouseMotionListener {
 
     public static boolean isInCanvas = false;
-    private int x1, y1, x2, y2;
-    private int currentX, currentY;
-    private boolean dragged = false;
+    private int x1, y1, x2, y2; // 当前坐标与上一次操作的坐标
+    private int currentX, currentY; // 实时坐标
+    private boolean dragged = false; // 是否拖动
     private Color currentColor;
     private Color lastColor;
     private boolean transparent;
     private int grouped;
     private BasicStroke stroke = new BasicStroke((float) 2);
-    private ArrayList<Drawable> graphics;
-    private ArrayList<Drawable> copyBuffer;
-    private int copyX, copyY;
+    private ArrayList<Drawable> graphics; // 当前画板上的图形
+    private ArrayList<Drawable> copyBuffer; // 复制图形的缓冲区
+    private int copyX, copyY; // 复制图形的坐标
 
-    private Stack<Drawable> removed;
-    private Drawable currentState;
+    private Stack<Drawable> removed; // 回收站，暂存被删除的图形
+    private Drawable currentState; // 当前正在操作的图形
     private BufferedImage canvas;
-    private Graphics2D graphics2D;
-    private ETools activeTool;
+    private Graphics2D graphics2D; // 画图
+    private ETools activeTool; // 当前工具
     private TextDialog textDialog;
-    private Dimension center, startPoint;
-    private int radius;
-    private Vector3 benchmark;
-    private Rectangle rectangle;
 
-    public DrawPanelListener(int x, int y) {
+    public DrawEventHandler(int x, int y) {
         setSize(x, y);
         Dimension temp = new Dimension(x, y);
         setMaximumSize(temp);
@@ -54,7 +50,7 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
         this.transparent = true;
     }
 
-    public DrawPanelListener() {
+    public DrawEventHandler() {
         setSize(1100, 550);
         Dimension temp = new Dimension(1100, 550);
         setMaximumSize(temp);
@@ -117,8 +113,6 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
 
     public void setTool(ETools tool) {
         this.activeTool = tool;
-        //System.out.println(this.toString());
-        //System.out.println(activeTool.toString() + "st");
     }
 
     public void setImage(BufferedImage image) {
@@ -279,7 +273,6 @@ public class DrawPanelListener extends JPanel implements MouseListener, MouseMot
                 y += StartUp.mainWindow.getDrawBackPanel().getLocation().y;
                 x += getLocation().x;
                 y += getLocation().y;
-                // TODO:暂时不清楚为啥get到的坐标还是和实际坐标差了8, 31，猜测是标题栏的长宽没被算进去
                 x += 8;
                 y += 31;
                 //
