@@ -4,7 +4,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,51 +15,51 @@ public class PaintMainWindow extends JFrame implements ActionListener {
     private JMenuBar mainMenu;
     private JPanel toolPanel;
     private JPanel drawBackPanel;
-    private JButton pencilBtn;
-    private JButton bucketBtn;
-    private JButton eraserBtn;
-    private JButton strawBtn;
-    private JButton textBtn;
-    private JButton brushesBtn;
-    private JButton lineBtn;
-    private JButton triangleBtn;
-    private JButton arcBtn;
-    private JButton ellipticalBtn;
-    private JButton pentagonBtn;
-    private JButton hexagonBtn;
-    private JButton magnifyingBtn;
+    private JButton pencilButton;
+    private JButton bucketButton;
+    private JButton eraserButton;
+    private JButton strawButton;
+    private JButton textButton;
+    private JButton brushesButton;
+    private JButton lineButton;
+    private JButton triangleButton;
+    private JButton arcButton;
+    private JButton ellipticalButton;
+    private JButton pentagonButton;
+    private JButton hexagonButton;
+    private JButton magnifyingButton;
     private JPanel mainTool;
     private JPanel shapeTools;
-    private JButton blackBtn;
-    private JButton garyBtn;
-    private JButton lightGaryBtn;
-    private JButton darkRedBtn;
-    private JButton pinkBtn;
-    private JButton citrusColorBtn;
-    private JButton redBtn;
-    private JButton waxyYellowBtn;
-    private JButton mistyColorBtn;
-    private JButton orangeBtn;
-    private JButton lightGreenBtn;
-    private JButton blueBtn;
-    private JButton lightYellowBtn;
-    private JButton ultramarineBtn;
-    private JButton lightPurpleBtn;
+    private JButton blackButton;
+    private JButton garyButton;
+    private JButton lightGaryButton;
+    private JButton darkRedButton;
+    private JButton pinkButton;
+    private JButton citrusColorButton;
+    private JButton redButton;
+    private JButton waxyYellowButton;
+    private JButton mistyColorButton;
+    private JButton orangeButton;
+    private JButton lightGreenButton;
+    private JButton blueButton;
+    private JButton lightYellowButton;
+    private JButton ultramarineButton;
+    private JButton lightPurpleButton;
     private JPanel colorPanel;
-    private JButton paletteBtn;
+    private JButton paletteButton;
     private JPanel brushPanel;
-    private JButton rectangleBtn;
-    private JButton selectBtn;
+    private JButton rectangleButton;
+    private JButton selectButton;
     private JPanel select;
     private JPanel statusPanel;
     private JSpinner sizeSpinner;
     private JPanel sizePanel;
-    private JButton nowColorBtn;
-    private JButton lastColorBtn;
+    private JButton nowColorButton;
+    private JButton lastColorButton;
     private JLabel mousePosLabel;
     private JLabel canvasSizeLabel;
     private JPanel drawPanel;
-    private JRadioButton fillBtn;
+    private JRadioButton fillButton;
     private JMenu file, view, edit;
     private JMenuItem openFile, newFile, saveFile;
     private JMenuItem full, half;
@@ -85,7 +84,7 @@ public class PaintMainWindow extends JFrame implements ActionListener {
         setCanvasSizeLabel(temp.width, temp.height);
         setMousePosLabel(0, 0);
         setVisible(true);
-        brushesBtn.requestFocus();
+        brushesButton.requestFocus();
     }
 
 
@@ -168,60 +167,60 @@ public class PaintMainWindow extends JFrame implements ActionListener {
         editor.getTextField().setEditable(false);
         editor.getTextField().setFocusable(false);
 
-        pencilBtn.setIcon(new ImageIcon("assets/pencil (Icon).png"));
-        eraserBtn.setIcon(new ImageIcon("assets/eraser (Icon).png"));
-        bucketBtn.setIcon(new ImageIcon("assets/bucket (Icon).png"));
-        strawBtn.setIcon(new ImageIcon("assets/straw (Icon).png"));
-        textBtn.setIcon(new ImageIcon("assets/text (Icon).png"));
-        magnifyingBtn.setIcon(new ImageIcon("assets/magnifying (Icon).png"));
-        brushesBtn.setIcon(new ImageIcon("assets/paint (Icon).png"));
-        lineBtn.setIcon(new ImageIcon("assets/line (Icon).png"));
-        arcBtn.setIcon(new ImageIcon("assets/arc (Icon).png"));
-        ellipticalBtn.setIcon(new ImageIcon("assets/elliptical (Icon).png"));
-        hexagonBtn.setIcon((new ImageIcon("assets/hexagon (Icon).png")));
-        pentagonBtn.setIcon(new ImageIcon("assets/pentagon (Icon).png"));
-        triangleBtn.setIcon(new ImageIcon("assets/triangle (Icon).png"));
-        rectangleBtn.setIcon(new ImageIcon("assets/rectangle (Icon).png"));
-        selectBtn.setIcon(new ImageIcon("assets/constituency (Icon).png"));
-        paletteBtn.setIcon(new ImageIcon("assets/color (Icon).png"));
+        pencilButton.setIcon(new ImageIcon("assets/pencil (Icon).png"));
+        eraserButton.setIcon(new ImageIcon("assets/eraser (Icon).png"));
+        bucketButton.setIcon(new ImageIcon("assets/bucket (Icon).png"));
+        strawButton.setIcon(new ImageIcon("assets/straw (Icon).png"));
+        textButton.setIcon(new ImageIcon("assets/text (Icon).png"));
+        magnifyingButton.setIcon(new ImageIcon("assets/magnifying (Icon).png"));
+        brushesButton.setIcon(new ImageIcon("assets/paint (Icon).png"));
+        lineButton.setIcon(new ImageIcon("assets/line (Icon).png"));
+        arcButton.setIcon(new ImageIcon("assets/arc (Icon).png"));
+        ellipticalButton.setIcon(new ImageIcon("assets/elliptical (Icon).png"));
+        hexagonButton.setIcon((new ImageIcon("assets/hexagon (Icon).png")));
+        pentagonButton.setIcon(new ImageIcon("assets/pentagon (Icon).png"));
+        triangleButton.setIcon(new ImageIcon("assets/triangle (Icon).png"));
+        rectangleButton.setIcon(new ImageIcon("assets/rectangle (Icon).png"));
+        selectButton.setIcon(new ImageIcon("assets/constituency (Icon).png"));
+        paletteButton.setIcon(new ImageIcon("assets/color (Icon).png"));
 
-        fillBtn.addActionListener(this);
+        fillButton.addActionListener(this);
 
-        pencilBtn.addActionListener(this);
-        eraserBtn.addActionListener(this);
-        bucketBtn.addActionListener(this);
-        strawBtn.addActionListener(this);
-        textBtn.addActionListener(this);
-        magnifyingBtn.addActionListener(this);
-        brushesBtn.addActionListener(this);
-        lineBtn.addActionListener(this);
-        arcBtn.addActionListener(this);
-        ellipticalBtn.addActionListener(this);
-        hexagonBtn.addActionListener(this);
-        pentagonBtn.addActionListener(this);
-        triangleBtn.addActionListener(this);
-        rectangleBtn.addActionListener(this);
-        selectBtn.addActionListener(this);
-        paletteBtn.addActionListener(this);
+        pencilButton.addActionListener(this);
+        eraserButton.addActionListener(this);
+        bucketButton.addActionListener(this);
+        strawButton.addActionListener(this);
+        textButton.addActionListener(this);
+        magnifyingButton.addActionListener(this);
+        brushesButton.addActionListener(this);
+        lineButton.addActionListener(this);
+        arcButton.addActionListener(this);
+        ellipticalButton.addActionListener(this);
+        hexagonButton.addActionListener(this);
+        pentagonButton.addActionListener(this);
+        triangleButton.addActionListener(this);
+        rectangleButton.addActionListener(this);
+        selectButton.addActionListener(this);
+        paletteButton.addActionListener(this);
 
-        blackBtn.addActionListener(this);
-        garyBtn.addActionListener(this);
-        lightGaryBtn.addActionListener(this);
-        darkRedBtn.addActionListener(this);
-        pinkBtn.addActionListener(this);
-        citrusColorBtn.addActionListener(this);
-        redBtn.addActionListener(this);
-        waxyYellowBtn.addActionListener(this);
-        mistyColorBtn.addActionListener(this);
-        orangeBtn.addActionListener(this);
-        lightGreenBtn.addActionListener(this);
-        blueBtn.addActionListener(this);
-        lightYellowBtn.addActionListener(this);
-        ultramarineBtn.addActionListener(this);
-        lightPurpleBtn.addActionListener(this);
+        blackButton.addActionListener(this);
+        garyButton.addActionListener(this);
+        lightGaryButton.addActionListener(this);
+        darkRedButton.addActionListener(this);
+        pinkButton.addActionListener(this);
+        citrusColorButton.addActionListener(this);
+        redButton.addActionListener(this);
+        waxyYellowButton.addActionListener(this);
+        mistyColorButton.addActionListener(this);
+        orangeButton.addActionListener(this);
+        lightGreenButton.addActionListener(this);
+        blueButton.addActionListener(this);
+        lightYellowButton.addActionListener(this);
+        ultramarineButton.addActionListener(this);
+        lightPurpleButton.addActionListener(this);
 
-        nowColorBtn.addActionListener(this);
-        lastColorBtn.addActionListener(this);
+        nowColorButton.addActionListener(this);
+        lastColorButton.addActionListener(this);
 
         initMap();
 
@@ -353,176 +352,176 @@ public class PaintMainWindow extends JFrame implements ActionListener {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(colorMap.get(source));
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (source == lastColorBtn) {
+        } else if (source == lastColorButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
-            ((DrawPanelListener) drawPanel).setColor(lastColorBtn.getBackground());
+            ((DrawPanelListener) drawPanel).setColor(lastColorButton.getBackground());
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if(source == nowColorBtn) {
+        } else if(source == nowColorButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
-            ((DrawPanelListener) drawPanel).setColor(nowColorBtn.getBackground());
+            ((DrawPanelListener) drawPanel).setColor(nowColorButton.getBackground());
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (source == paletteBtn) {
+        } else if (source == paletteButton) {
             showColorChooser();
-        } else if (source == fillBtn) {
-            StartUp.mainWindow.getDrawPanel().setTransparency(!fillBtn.isSelected());
-        } else if (source == selectBtn) {
+        } else if (source == fillButton) {
+            StartUp.mainWindow.getDrawPanel().setTransparency(!fillButton.isSelected());
+        } else if (source == selectButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.SELECT);
         }
     }
 
     private void initMap() {
-        toolMap.put(pencilBtn, ETools.PENCIL);
-        toolMap.put(eraserBtn, ETools.ERASER);
-        toolMap.put(bucketBtn, ETools.BUCKET);
-        toolMap.put(strawBtn, ETools.STRAW);
-        toolMap.put(textBtn, ETools.TEXT);
-        toolMap.put(brushesBtn, ETools.PENCIL);
-        toolMap.put(lineBtn, ETools.LINE);
-        toolMap.put(arcBtn, ETools.POLYGON);
-        toolMap.put(ellipticalBtn, ETools.ELLIPTICAL);
-        toolMap.put(hexagonBtn, ETools.HEXAGON);
-        toolMap.put(pentagonBtn, ETools.PENTAGON);
-        toolMap.put(triangleBtn, ETools.TRIANGLE);
-        toolMap.put(rectangleBtn, ETools.RECTANGLE);
+        toolMap.put(pencilButton, ETools.PENCIL);
+        toolMap.put(eraserButton, ETools.ERASER);
+        toolMap.put(bucketButton, ETools.BUCKET);
+        toolMap.put(strawButton, ETools.STRAW);
+        toolMap.put(textButton, ETools.TEXT);
+        toolMap.put(brushesButton, ETools.PENCIL);
+        toolMap.put(lineButton, ETools.LINE);
+        toolMap.put(arcButton, ETools.POLYGON);
+        toolMap.put(ellipticalButton, ETools.ELLIPTICAL);
+        toolMap.put(hexagonButton, ETools.HEXAGON);
+        toolMap.put(pentagonButton, ETools.PENTAGON);
+        toolMap.put(triangleButton, ETools.TRIANGLE);
+        toolMap.put(rectangleButton, ETools.RECTANGLE);
 
-        colorMap.put(blackBtn, SpecialColor.black);
-        colorMap.put(garyBtn, SpecialColor.gary);
-        colorMap.put(lightGaryBtn, SpecialColor.lightGary);
-        colorMap.put(darkRedBtn, SpecialColor.darkRed);
-        colorMap.put(pinkBtn, SpecialColor.pink);
-        colorMap.put(citrusColorBtn, SpecialColor.citrusColor);
-        colorMap.put(redBtn, SpecialColor.red);
-        colorMap.put(waxyYellowBtn, SpecialColor.waxyYellow);
-        colorMap.put(mistyColorBtn, SpecialColor.mistyColor);
-        colorMap.put(orangeBtn, SpecialColor.orange);
-        colorMap.put(lightGreenBtn, SpecialColor.lightGreen);
-        colorMap.put(blueBtn, SpecialColor.blue);
-        colorMap.put(lightYellowBtn, SpecialColor.lightYellow);
-        colorMap.put(ultramarineBtn, SpecialColor.ultramarine);
-        colorMap.put(lightPurpleBtn, SpecialColor.lightPurple);
+        colorMap.put(blackButton, SpecialColor.black);
+        colorMap.put(garyButton, SpecialColor.gary);
+        colorMap.put(lightGaryButton, SpecialColor.lightGary);
+        colorMap.put(darkRedButton, SpecialColor.darkRed);
+        colorMap.put(pinkButton, SpecialColor.pink);
+        colorMap.put(citrusColorButton, SpecialColor.citrusColor);
+        colorMap.put(redButton, SpecialColor.red);
+        colorMap.put(waxyYellowButton, SpecialColor.waxyYellow);
+        colorMap.put(mistyColorButton, SpecialColor.mistyColor);
+        colorMap.put(orangeButton, SpecialColor.orange);
+        colorMap.put(lightGreenButton, SpecialColor.lightGreen);
+        colorMap.put(blueButton, SpecialColor.blue);
+        colorMap.put(lightYellowButton, SpecialColor.lightYellow);
+        colorMap.put(ultramarineButton, SpecialColor.ultramarine);
+        colorMap.put(lightPurpleButton, SpecialColor.lightPurple);
     }
 
     public void actionPerformed1(ActionEvent e) {
-        if (e.getSource() == paletteBtn) {
+        if (e.getSource() == paletteButton) {
             showColorChooser();
-        } else if (e.getSource() == pencilBtn) {
+        } else if (e.getSource() == pencilButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.PENCIL);
-        } else if (e.getSource() == eraserBtn) {
+        } else if (e.getSource() == eraserButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.ERASER);
-        } else if (e.getSource() == bucketBtn) {
+        } else if (e.getSource() == bucketButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.BUCKET);
-        } else if (e.getSource() == textBtn) {
+        } else if (e.getSource() == textButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.TEXT);
-        } else if (e.getSource() == magnifyingBtn) {
+        } else if (e.getSource() == magnifyingButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.MAGNIFYING);
-        } else if (e.getSource() == strawBtn) {
+        } else if (e.getSource() == strawButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.STRAW);
-        } else if (e.getSource() == brushesBtn) {
+        } else if (e.getSource() == brushesButton) {
             // TODO
             ((DrawPanelListener) drawPanel).setTool(ETools.PENCIL);
-        } else if (e.getSource() == lineBtn) {
+        } else if (e.getSource() == lineButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.LINE);
-        } else if (e.getSource() == arcBtn) {
+        } else if (e.getSource() == arcButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.POLYGON);
-        } else if (e.getSource() == ellipticalBtn) {
+        } else if (e.getSource() == ellipticalButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.ELLIPTICAL);
-        } else if (e.getSource() == hexagonBtn) {
+        } else if (e.getSource() == hexagonButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.HEXAGON);
-        } else if (e.getSource() == pentagonBtn) {
+        } else if (e.getSource() == pentagonButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.PENTAGON);
-        } else if (e.getSource() == triangleBtn) {
+        } else if (e.getSource() == triangleButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.TRIANGLE);
-        } else if (e.getSource() == rectangleBtn) {
+        } else if (e.getSource() == rectangleButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.RECTANGLE);
-        } else if (e.getSource() == blackBtn) {
+        } else if (e.getSource() == blackButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.black);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == garyBtn) {
+        } else if (e.getSource() == garyButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.gary);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == lightGaryBtn) {
+        } else if (e.getSource() == lightGaryButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.lightGary);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == darkRedBtn) {
+        } else if (e.getSource() == darkRedButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.darkRed);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == pinkBtn) {
+        } else if (e.getSource() == pinkButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.pink);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == citrusColorBtn) {
+        } else if (e.getSource() == citrusColorButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.citrusColor);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == redBtn) {
+        } else if (e.getSource() == redButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.red);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == redBtn) {
+        } else if (e.getSource() == redButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.red);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == waxyYellowBtn) {
+        } else if (e.getSource() == waxyYellowButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.waxyYellow);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == mistyColorBtn) {
+        } else if (e.getSource() == mistyColorButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.mistyColor);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == orangeBtn) {
+        } else if (e.getSource() == orangeButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.orange);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == lightGreenBtn) {
+        } else if (e.getSource() == lightGreenButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.lightGreen);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == blueBtn) {
+        } else if (e.getSource() == blueButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.blue);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == lightYellowBtn) {
+        } else if (e.getSource() == lightYellowButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.lightYellow);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == ultramarineBtn) {
+        } else if (e.getSource() == ultramarineButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.ultramarine);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == lightPurpleBtn) {
+        } else if (e.getSource() == lightPurpleButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
             ((DrawPanelListener) drawPanel).setColor(SpecialColor.lightPurple);
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == lastColorBtn) {
+        } else if (e.getSource() == lastColorButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
-            ((DrawPanelListener) drawPanel).setColor(lastColorBtn.getBackground());
+            ((DrawPanelListener) drawPanel).setColor(lastColorButton.getBackground());
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == nowColorBtn) {
+        } else if (e.getSource() == nowColorButton) {
             setLastColor(((DrawPanelListener) drawPanel).getCurrentColor());
-            ((DrawPanelListener) drawPanel).setColor(nowColorBtn.getBackground());
+            ((DrawPanelListener) drawPanel).setColor(nowColorButton.getBackground());
             setCurrentColor(((DrawPanelListener) drawPanel).getCurrentColor());
-        } else if (e.getSource() == fillBtn) {
-            if (fillBtn.isSelected()) {
+        } else if (e.getSource() == fillButton) {
+            if (fillButton.isSelected()) {
                 StartUp.mainWindow.getDrawPanel().setTransparency(false);
             } else {
                 StartUp.mainWindow.getDrawPanel().setTransparency(true);
             }
-        } else if (e.getSource() == selectBtn) {
+        } else if (e.getSource() == selectButton) {
             ((DrawPanelListener) drawPanel).setTool(ETools.SELECT);
         }
     }
 
     public void setLastColor(Color lastColor) {
-        lastColorBtn.setBackground(lastColor);
+        lastColorButton.setBackground(lastColor);
     }
 
     public void setCurrentColor(Color currentColor) {
-        nowColorBtn.setBackground(currentColor);
+        nowColorButton.setBackground(currentColor);
     }
 
     private void createUIComponents() {

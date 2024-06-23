@@ -565,21 +565,21 @@ class HexagonShape extends BasicShape {
 
 
     public HexagonShape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke) {
-        super(x1, y1, color, stroke, ETools.PENTAGON);
+        super(x1, y1, color, stroke, ETools.HEXAGON);
         this.x2 = x2;
         this.y2 = y2;
         initPoints();
     }
 
     public HexagonShape(int x1, int y1, int x2, int y2, Color color, BasicStroke stroke, Color fillColor, boolean transparent) {
-        super(x1, y1, color, stroke, ETools.PENTAGON, fillColor, transparent);
+        super(x1, y1, color, stroke, ETools.HEXAGON, fillColor, transparent);
         this.x2 = x2;
         this.y2 = y2;
         initPoints();
     }
 
     public HexagonShape(HexagonShape rhs) {
-        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.PENTAGON);
+        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.HEXAGON, rhs.fillColor, rhs.transparent);
         this.x2 = rhs.x2;
         this.y2 = rhs.y2;
         initPoints();
@@ -689,12 +689,7 @@ class HexagonShape extends BasicShape {
 
     @Override
     public Drawable getClone() {
-        try {
-            return (Drawable) this.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new HexagonShape(this);
     }
 }
 
@@ -839,6 +834,14 @@ class TextShape extends BasicShape {
         this.message = message;
     }
 
+    public TextShape(TextShape rhs) {
+        super(rhs.x, rhs.y, rhs.color, rhs.stroke, ETools.TEXT);
+        this.font = rhs.font;
+        this.fontSize = rhs.fontSize;
+        this.message = rhs.message;
+
+    }
+
     @Override
     protected void draw(Graphics2D g2) {
         g2.setFont(font);
@@ -875,12 +878,7 @@ class TextShape extends BasicShape {
 
     @Override
     public Drawable getClone() {
-        try {
-            return (Drawable) this.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new TextShape(this);
     }
 }
 
@@ -1324,7 +1322,10 @@ class Selected implements Drawable {
     public ArrayList<Drawable> getShapesCopy() {
         ArrayList<Drawable> shapesCopy = new ArrayList<>();
         for (Drawable drawable : shapes) {
-            shapesCopy.add(drawable.getClone());
+            var cloneDrawable = drawable.getClone();
+            if (cloneDrawable != null) {
+                shapesCopy.add(cloneDrawable);
+            }
         }
         return shapesCopy;
     }
